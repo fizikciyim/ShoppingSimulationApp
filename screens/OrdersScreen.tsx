@@ -16,8 +16,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDarkMode } from "../context/DarkModeContext";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config";
 export const getImageSource = (img: any) => {
   try {
     // 🔹 Boş veya geçersizse fallback

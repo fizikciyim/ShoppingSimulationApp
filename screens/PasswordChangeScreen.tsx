@@ -14,8 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useDarkMode } from "../context/DarkModeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LottieView from "lottie-react-native";
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config";
 const PasswordChangeScreen: React.FC = () => {
   const { isDark } = useDarkMode();
 

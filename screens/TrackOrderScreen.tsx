@@ -13,8 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import { useDarkMode } from "../context/DarkModeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config";
 export default function TrackOrderScreen() {
   const route = useRoute();
   const { orderId } = route.params as { orderId: number };

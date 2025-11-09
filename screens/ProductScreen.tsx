@@ -18,8 +18,7 @@ import CheckBox from "expo-checkbox";
 import { useCart } from "../context/CartContext";
 import { useDarkMode } from "../context/DarkModeContext";
 import ImageViewer from "react-native-image-zoom-viewer";
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");

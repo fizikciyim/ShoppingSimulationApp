@@ -16,8 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useDarkMode } from "../context/DarkModeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DropDownPicker from "react-native-dropdown-picker";
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config";
 const FeedbackScreen: React.FC = () => {
   const { isDark } = useDarkMode(); // ✅ artık context'le uyumlu
 

@@ -18,8 +18,8 @@ import { useDarkMode } from "../context/DarkModeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { termsText } from "../termsText";
 import { TouchableWithoutFeedback } from "react-native";
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config"; // veya ../../config (dosyanın konumuna göre)
+import { getToken } from "../utils/storage"; // dosya yolunu senin projene göre düzelt
 
 const CheckoutScreen: React.FC = ({ navigation }) => {
   const { clearCart, cartItems } = useCart();
@@ -46,19 +46,12 @@ const CheckoutScreen: React.FC = ({ navigation }) => {
   const loadAddresses = async () => {
     try {
       setLoading(true);
-
-      // 🔑 Token al
-      let token;
-      if (typeof window !== "undefined") {
-        token = localStorage.getItem("token");
-      } else {
-        token = await AsyncStorage.getItem("token");
-      }
+      const token = await getToken();
 
       const response = await fetch(`${BASE_URL}/addresses`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // 🔹 Auth header ekle
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -111,13 +104,7 @@ const CheckoutScreen: React.FC = ({ navigation }) => {
     }
 
     try {
-      // 🧩 Token’ı platforma göre al
-      let token;
-      if (typeof window !== "undefined") {
-        token = localStorage.getItem("token");
-      } else {
-        token = await AsyncStorage.getItem("token");
-      }
+      const token = await getToken();
 
       if (!token) {
         Alert.alert("Oturum bulunamadı", "Lütfen giriş yapın.");

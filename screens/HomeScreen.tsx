@@ -11,8 +11,7 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useDarkMode } from "../context/DarkModeContext";
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config";
 import { CategoryCard } from "../components/CategoryCard";
 
 type RootStackParamList = {
@@ -33,6 +32,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     try {
       const response = await fetch(`${BASE_URL}/api/categories`);
       const text = await response.text();
+
       const data = JSON.parse(text);
       setCategories(data);
     } catch (error) {

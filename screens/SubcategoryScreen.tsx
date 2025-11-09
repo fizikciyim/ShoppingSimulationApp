@@ -11,8 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDarkMode } from "../context/DarkModeContext";
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config";
 export default function SubcategoryScreen({ route, navigation }: any) {
   const { categoryId, categoryName } = route.params;
   const { isDark } = useDarkMode();

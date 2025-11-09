@@ -6,13 +6,12 @@ import {
   Button,
   StyleSheet,
   TouchableOpacity,
-  Platform,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import { useDarkMode } from "../context/DarkModeContext"; // ✅ eklendi
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config";
+import { saveToken, saveUser } from "../utils/storage"; // 📦 üstte ekle
+
 const LoginScreen: React.FC<{ onLogin?: () => void }> = ({
   navigation,
   onLogin,
@@ -55,6 +54,10 @@ const LoginScreen: React.FC<{ onLogin?: () => void }> = ({
         return;
       }
 
+      // ✅ Token ve kullanıcı bilgisi kaydet
+      await saveToken(data.token);
+      await saveUser(data.user);
+
       Toast.show({
         type: "success",
         text1: "Başarılı",
@@ -64,13 +67,6 @@ const LoginScreen: React.FC<{ onLogin?: () => void }> = ({
         topOffset: 150,
       });
 
-      if (Platform.OS === "web") {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user)); // ✅ kullanıcı bilgisi de saklanır
-      } else {
-        await AsyncStorage.setItem("token", data.token);
-        await AsyncStorage.setItem("user", JSON.stringify(data.user)); // ✅
-      }
       if (onLogin) onLogin();
     } catch (err) {
       console.error(err);

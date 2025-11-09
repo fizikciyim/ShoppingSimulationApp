@@ -35,7 +35,7 @@ export default {
         projectId: "d6f19580-a7bf-42ae-9748-47cb1d1ff871",
       },
       // ✅ Artık HTTPS ve domain üzerinden gidiyoruz
-      BASE_URL: "https://shopapi.yunuskarasen.com/api",
+      BASE_URL: "https://shopapi.yunuskarasen.com",
     },
   },
 };

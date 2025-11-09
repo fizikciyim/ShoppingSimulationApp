@@ -14,8 +14,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { useDarkMode } from "../context/DarkModeContext";
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config"; // veya ../../config (dosyanın konumuna göre)
 
 export default function AddressBookScreen({ navigation }: any) {
   const [addresses, setAddresses] = useState<any[]>([]);

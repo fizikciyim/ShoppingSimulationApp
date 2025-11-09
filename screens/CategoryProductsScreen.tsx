@@ -16,8 +16,8 @@ import { ProductCard } from "../components/ProductCard";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useDarkMode } from "../context/DarkModeContext";
 import { Ionicons } from "@expo/vector-icons";
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config"; // veya ../../config (dosyanın konumuna göre)
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import RequestSuccessModal from "../components/RequestSuccessModal";
 

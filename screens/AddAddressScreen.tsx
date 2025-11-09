@@ -12,8 +12,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRoute } from "@react-navigation/native";
 import { useDarkMode } from "../context/DarkModeContext";
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config"; // veya ../../config (dosyanın konumuna göre)
 
 export default function AddAddressScreen({ navigation }: any) {
   const route = useRoute();

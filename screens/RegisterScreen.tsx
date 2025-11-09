@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import { useDarkMode } from "../context/DarkModeContext"; // ✅ ekledik
-import Constants from "expo-constants";
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { BASE_URL } from "../config";
 const RegisterScreen: React.FC = ({ navigation }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
