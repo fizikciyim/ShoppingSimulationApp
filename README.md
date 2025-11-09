@@ -172,11 +172,7 @@ Projede `BASE_URL` değeri `app.config.js` üzerinden dinamik olarak eklenir.
 
 ## 📸 Ekran Görüntüleri
 
-| Ana Sayfa | Ürün Detayı | Sepet |
-| --------- | ----------- | ----- |
-| 🏠        | 📦          | 🛒    |
 
-_(Ekran görüntülerini istersen ekleyebilirsin — `assets/screenshots/` klasörüne koyabilirsin.)_
 
 ---
 
