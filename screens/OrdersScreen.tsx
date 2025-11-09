@@ -230,6 +230,76 @@ const OrdersScreen: React.FC = () => {
               : "Devam Edenleri Göster"}
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteAllButton}
+          onPress={async () => {
+            const confirm =
+              Platform.OS === "web"
+                ? window.confirm(
+                    "Bu işlemin geri dönüşü yoktur.\nTüm siparişlerinizi kalıcı olarak silmek istediğinize emin misiniz?"
+                  )
+                : await new Promise((resolve) => {
+                    Alert.alert(
+                      "Tümünü Sil",
+                      "Bu işlemin geri dönüşü yoktur. Tüm siparişlerinizi kalıcı olarak silmek istediğinize emin misiniz?",
+                      [
+                        {
+                          text: "Vazgeç",
+                          style: "cancel",
+                          onPress: () => resolve(false),
+                        },
+                        {
+                          text: "Evet, Sil",
+                          style: "destructive",
+                          onPress: () => resolve(true),
+                        },
+                      ]
+                    );
+                  });
+
+            if (!confirm) return;
+
+            try {
+              let token;
+              if (Platform.OS === "web") token = localStorage.getItem("token");
+              else token = await AsyncStorage.getItem("token");
+
+              if (!token) {
+                if (Platform.OS === "web") alert("Giriş yapmanız gerekiyor.");
+                else Alert.alert("Hata", "Giriş yapmanız gerekiyor.");
+                return;
+              }
+
+              const res = await fetch(`${BASE_URL}/orders`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              const data = await res.json();
+
+              if (res.ok && data.success) {
+                setOrders([]);
+                if (Platform.OS === "web")
+                  alert("Tüm siparişler başarıyla silindi.");
+                else
+                  Alert.alert("Başarılı", "Tüm siparişler başarıyla silindi.");
+              } else {
+                if (Platform.OS === "web")
+                  alert(data.message || "Siparişler silinemedi.");
+                else
+                  Alert.alert("Hata", data.message || "Siparişler silinemedi.");
+              }
+            } catch (err) {
+              console.error("Tümünü sil hata:", err);
+              if (Platform.OS === "web") alert("Sunucuya bağlanılamadı.");
+              else Alert.alert("Sunucuya bağlanılamadı.");
+            }
+          }}
+        >
+          <Ionicons name="trash-outline" size={18} color="#fff" />
+          <Text style={{ color: "#fff", fontWeight: "600", marginLeft: 6 }}>
+            Tümünü Sil
+          </Text>
+        </TouchableOpacity>
       </View>
       {orders.length === 0 ? (
         <View style={styles.emptyBox}>
@@ -501,6 +571,15 @@ const styles = StyleSheet.create({
   filterButtonText: {
     fontWeight: "600",
     color: "#4CAF50",
+  },
+  deleteAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f44336",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginLeft: 10,
   },
 });
 

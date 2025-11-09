@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -22,25 +22,46 @@ const ProfileScreen: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [aboutModalVisible, setAboutModalVisible] = useState(false);
 
-  const user = {
-    username: "Yunus",
-    email: "yunus@example.com",
-    avatarUrl: require("../assets/logo.png"),
-  };
+  const [user, setUser] = useState<{ username?: string } | null>(null);
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        if (Platform.OS === "web") {
+          const storedUser = localStorage.getItem("user");
+          if (storedUser) setUser(JSON.parse(storedUser));
+        } else {
+          const storedUser = await AsyncStorage.getItem("user");
+          if (storedUser) setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.error("Kullanıcı bilgisi alınamadı:", error);
+      }
+    };
 
+    loadUser();
+  }, []);
   const confirmLogout = async () => {
     try {
-      if (typeof window !== "undefined") {
-        // 🔹 Web ortamı
+      if (Platform.OS === "web") {
+        // 🌐 Tarayıcı ortamı
         localStorage.removeItem("token");
-        localStorage.removeItem("user"); // ✅ user da siliniyor
+        localStorage.removeItem("user");
       } else {
-        // 🔹 Mobil (React Native)
-        await AsyncStorage.multiRemove(["token", "user"]); // ✅ ikisini birden sil
+        // 📱 Mobil ortam (React Native)
+        await AsyncStorage.multiRemove(["token", "user"]);
       }
 
       setLogoutModalVisible(false);
-      if (onLogout) onLogout();
+
+      if (onLogout) {
+        onLogout();
+      } else {
+        // opsiyonel: Çıkıştan sonra giriş sayfasına yönlendirme
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Login" as never }],
+        });
+      }
     } catch (error) {
       console.error("Çıkış hatası:", error);
     }
@@ -52,9 +73,8 @@ const ProfileScreen: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
     <ScrollView contentContainerStyle={styles.container}>
       {/* 👤 Profil Başlığı */}
       <View style={styles.header}>
-        <Image source={user.avatarUrl} style={styles.avatar} />
-        <Text style={styles.username}>{user.username}</Text>
-        <Text style={styles.email}>{user.email}</Text>
+        <Image source={require("../assets/logo.png")} style={styles.avatar} />
+        <Text style={styles.username}>{user?.username || "Kullanıcı"}</Text>
 
         {/* 🌙 Tema Değiştirici */}
         <View style={styles.themeSwitchContainer}>
@@ -218,22 +238,54 @@ const ProfileScreen: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
       {/* 🛈 Uygulama Hakkında Modal */}
       <Modal transparent visible={aboutModalVisible} animationType="fade">
         <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
+          <View
+            style={[
+              styles.modalContainer,
+              { alignItems: "stretch", paddingBottom: 0 },
+            ]}
+          >
             <Ionicons
               name="information-circle-outline"
               size={40}
               color="#4CAF50"
-              style={{ marginBottom: 10 }}
+              style={{ alignSelf: "center", marginBottom: 10 }}
             />
-            <Text style={styles.modalTitle}>Uygulama Hakkında</Text>
-            <ScrollView style={{ maxHeight: 500 }}>
-              <Text style={styles.modalText}>{aboutText}</Text>
+            <Text style={[styles.modalTitle, { textAlign: "center" }]}>
+              Uygulama Hakkında
+            </Text>
+            <View
+              style={{
+                height: 3, // 🔹 biraz daha kalın
+                backgroundColor: isDark ? "#4CAF50" : "#2e7d32", // 🔹 yeşil tonuyla vurgulu
+                width: "85%", // 🔹 biraz daha uzun
+                alignSelf: "center",
+                marginBottom: 12,
+                borderRadius: 2, // 🔹 yumuşak kenar
+              }}
+            />
+
+            <ScrollView
+              style={{ maxHeight: 400, width: "100%" }}
+              contentContainerStyle={{
+                paddingHorizontal: 15,
+                paddingBottom: 15,
+              }}
+              showsVerticalScrollIndicator={false}
+            >
+              <Text style={[styles.modalText, { textAlign: "left" }]}>
+                {aboutText}
+              </Text>
             </ScrollView>
 
             <TouchableOpacity
               style={[
                 styles.modalButton,
-                { backgroundColor: "#4CAF50", marginTop: 10, width: "100%" },
+                {
+                  backgroundColor: "#4CAF50",
+                  marginHorizontal: 15,
+                  marginTop: 10,
+                  marginBottom: 15,
+                },
               ]}
               onPress={() => setAboutModalVisible(false)}
             >
@@ -342,7 +394,7 @@ const getStyles = (isDark: boolean) =>
     modalContainer: {
       backgroundColor: isDark ? "#1E1E1E" : "#fff",
       borderRadius: 12,
-      padding: 35, // 🔹 önce 25’ti, biraz artırdık
+      padding: 10, // 🔹 önce 25’ti, biraz artırdık
       alignItems: "center",
       width: "90%", // 🔹 önce 80% idi, artık daha geniş
       maxHeight: "90%", // 🔹 uzun yazılar için daha fazla yer
@@ -351,7 +403,8 @@ const getStyles = (isDark: boolean) =>
       fontSize: 18,
       fontWeight: "bold",
       color: isDark ? "#fff" : "#333",
-      marginBottom: 10,
+      marginTop: 5,
+      textAlign: "center",
     },
     modalText: {
       color: isDark ? "#ddd" : "#555",

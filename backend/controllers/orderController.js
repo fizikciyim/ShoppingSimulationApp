@@ -301,3 +301,32 @@ export const deleteOrderById = async (req, res) => {
     return res.status(500).json({ success: false, message: "Sunucu hatası" });
   }
 };
+
+export const deleteAllOrders = async (req, res) => {
+  const user_id = req.user?.id;
+
+  if (!user_id) {
+    return res.status(401).json({ success: false, message: "Yetkisiz." });
+  }
+
+  try {
+    const [result] = await db.query("DELETE FROM orders WHERE user_id = ?", [
+      user_id,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Silinecek sipariş bulunamadı.",
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Tüm siparişler başarıyla silindi.",
+    });
+  } catch (err) {
+    console.error("Tüm siparişleri silme hatası:", err);
+    return res.status(500).json({ success: false, message: "Sunucu hatası" });
+  }
+};
