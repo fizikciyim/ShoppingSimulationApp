@@ -173,6 +173,7 @@ const SepetimScreen = () => {
                   "https://via.placeholder.com/150?text=No+Image",
               }}
               style={styles.image}
+              resizeMode="contain" // ⬅️ Kesmeye razıysan en estetik olanı
             />
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={[styles.name, { color: isDark ? "#fff" : "#333" }]}>
@@ -375,8 +376,8 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    width: 80,
-    height: 80,
+    width: 90,
+    aspectRatio: 1, // ⬅️ Oranı sabit tutar (yüksekliği kendisi hesaplar)
     borderRadius: 12,
     backgroundColor: "#fafafa",
     borderWidth: 1,

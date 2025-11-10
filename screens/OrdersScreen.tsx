@@ -386,7 +386,7 @@ const OrdersScreen: React.FC = () => {
                         <Image
                           source={getImageSource(product.images?.[0])}
                           style={styles.productImage}
-                          resizeMode="cover"
+                          resizeMode="contain"
                         />
                       ) : (
                         <Ionicons name="image-outline" size={20} color="#aaa" />
@@ -508,10 +508,13 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   productImage: {
-    width: 24,
-    height: 24,
+    width: 40, // biraz büyüttük, istersen 30 yapabilirsin
+    aspectRatio: 1, // oranı sabit tutar (yükseklik otomatik olur)
     borderRadius: 6,
     marginRight: 6,
+    backgroundColor: "#fafafa",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.1)",
   },
   productName: { fontSize: 13, fontWeight: "500", maxWidth: 100 },
   totalPrice: { fontSize: 15, fontWeight: "bold", marginTop: 6 },

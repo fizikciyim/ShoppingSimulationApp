@@ -308,18 +308,18 @@ export default function TrackOrderScreen() {
                       { backgroundColor: isDark ? "#4E342E" : "#FFEBEE" },
                     ]}
                   >
-                    <Ionicons
-                      name="alert-circle-outline"
-                      size={34}
-                      color="#F44336"
-                      style={{ marginBottom: 6 }}
-                    />
                     <Text
                       style={[
                         styles.cancelText,
                         { color: isDark ? "#EF9A9A" : "#C62828" },
                       ]}
                     >
+                      <Ionicons
+                        name="alert-circle-outline"
+                        size={24}
+                        color="#F44336"
+                        style={{ marginEnd: 6 }}
+                      />
                       Üzgünüz, siparişiniz iptal edildi.
                     </Text>
                   </View>
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
   cancelText: {
     fontWeight: "bold",
     textAlign: "center",
-    fontSize: 15,
+    fontSize: 16,
     lineHeight: 21,
   },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
