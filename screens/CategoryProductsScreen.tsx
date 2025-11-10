@@ -17,6 +17,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useDarkMode } from "../context/DarkModeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { BASE_URL } from "../config"; // veya ../../config (dosyanın konumuna göre)
+import { useCart } from "../context/CartContext";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import RequestSuccessModal from "../components/RequestSuccessModal";
@@ -65,6 +66,8 @@ const CategoryProductsScreen: React.FC<Props> = ({ route, navigation }) => {
   const [activeSubId, setActiveSubId] = useState<string | null>(
     subcategoryId ?? null
   );
+
+  const { addToCart } = useCart();
 
   const [contentWidth, setContentWidth] = useState(0);
 
@@ -139,13 +142,6 @@ const CategoryProductsScreen: React.FC<Props> = ({ route, navigation }) => {
     const key = activeSubId ? String(activeSubId) : "null";
     const layout = itemLayoutsRef.current[key];
     if (!layout) return;
-
-    console.log("🎯 centerActiveChip", {
-      activeSubId,
-      layout,
-      listWidth,
-      contentWidth,
-    });
 
     const edgePadding = 10;
     const targetCenter = layout.x + layout.width / 2;
@@ -530,6 +526,7 @@ const CategoryProductsScreen: React.FC<Props> = ({ route, navigation }) => {
                   }
                   isFavorite={!!favorites[item.id]}
                   onToggleFavorite={() => toggleFavorite(item)}
+                  onAddToCart={() => addToCart(item)} // ✅ “+” butonuna bağlandı
                 />
               </View>
             )}

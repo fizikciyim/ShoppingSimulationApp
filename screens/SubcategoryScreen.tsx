@@ -70,6 +70,7 @@ export default function SubcategoryScreen({ route, navigation }: any) {
         data={subcategories}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={{ paddingVertical: 10 }}
+        showsVerticalScrollIndicator={false} // 🔹 scrollbar'ı gizler
         renderItem={({ item }) => (
           <AnimatedCard
             item={item}

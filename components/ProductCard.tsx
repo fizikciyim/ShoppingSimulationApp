@@ -9,11 +9,11 @@ import {
   Dimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BASE_URL } from "../config";
 const { width } = Dimensions.get("window");
+import { Animated, Easing } from "react-native";
 
 interface Product {
   id: string;
@@ -31,6 +31,7 @@ interface ProductCardProps {
   onPress: () => void;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
+  onAddToCart?: () => void; // ✅ eklendi
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -38,9 +39,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onPress,
   isFavorite = false,
   onToggleFavorite,
+  onAddToCart, // ✅ BUNU EKLE
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const listRef = useRef<FlatList<any>>(null);
+
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const handleAddToCart = () => {
+    // Animasyon
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 1.2,
+        duration: 120,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 120,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Sepete ekleme fonksiyonunu çağır
+    onAddToCart && onAddToCart();
+  };
 
   // 🔹 Görsel listesi
   const imageList =
@@ -58,119 +82,132 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <TouchableOpacity
-      style={[styles.card, { width: cardWidth }]}
-      onPress={onPress}
-      activeOpacity={0.9}
-    >
-      {/* 🔹 Görseller (kaydırılabilir) */}
-      <View style={styles.imageContainer}>
-        <FlatList
-          ref={listRef}
-          data={imageList}
-          horizontal
-          keyExtractor={(_, i) => i.toString()}
-          renderItem={({ item }) => (
-            <Image
-              source={item.uri ? { uri: item.uri } : item}
-              style={[styles.image, { width: cardWidth }]}
-            />
-          )}
-          pagingEnabled
-          snapToInterval={cardWidth}
-          snapToAlignment="start"
-          decelerationRate="fast"
-          disableIntervalMomentum
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        />
-
-        <TouchableOpacity
-          onPress={onToggleFavorite}
-          activeOpacity={0.8}
-          style={styles.favoriteBtn}
-        >
-          <Ionicons
-            name={isFavorite ? "heart" : "heart-outline"}
-            size={18}
-            color={isFavorite ? "#FF1744" : "#fff"}
-          />
-        </TouchableOpacity>
-        {product.discountRate && (
-          <View style={styles.discountBadge}>
-            <Text style={styles.discountText}>-%{product.discountRate}</Text>
-          </View>
-        )}
-        {imageList.length > 1 && (
-          <View style={styles.dotsContainer}>
-            {imageList.map((_, i) => (
-              <View
-                key={i}
-                style={[styles.dot, i === activeIndex && styles.activeDot]}
+    <View style={[styles.cardContainer, { width: cardWidth }]}>
+      <TouchableOpacity
+        style={[styles.card, { width: cardWidth }]}
+        onPress={onPress}
+        activeOpacity={0.9}
+      >
+        {/* 🔹 Görseller (kaydırılabilir) */}
+        <View style={styles.imageContainer}>
+          <FlatList
+            ref={listRef}
+            data={imageList}
+            horizontal
+            keyExtractor={(_, i) => i.toString()}
+            renderItem={({ item }) => (
+              <Image
+                source={item.uri ? { uri: item.uri } : item}
+                style={[styles.image, { width: cardWidth }]}
               />
-            ))}
-          </View>
-        )}
-      </View>
+            )}
+            pagingEnabled
+            snapToInterval={cardWidth}
+            snapToAlignment="start"
+            decelerationRate="fast"
+            disableIntervalMomentum
+            showsHorizontalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+          />
 
-      {/* 🔹 Bilgi alanı */}
-      <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={1}>
-          {product.name}
-        </Text>
-
-        <View style={styles.priceRow}>
-          {product.discountRate ? (
-            <>
-              <Text style={styles.oldPrice}>{product.originalPrice} ₺</Text>
-              <Text style={styles.newPrice}>{product.price} ₺</Text>
-            </>
-          ) : (
-            <Text style={styles.newPrice}>{product.price} ₺</Text>
+          <TouchableOpacity
+            onPress={onToggleFavorite}
+            activeOpacity={0.8}
+            style={styles.favoriteBtn}
+          >
+            <Ionicons
+              name={isFavorite ? "heart" : "heart-outline"}
+              size={18}
+              color={isFavorite ? "#FF1744" : "#fff"}
+            />
+          </TouchableOpacity>
+          <Animated.View
+            style={[styles.addBtn, { transform: [{ scale: scaleAnim }] }]}
+          >
+            <TouchableOpacity onPress={handleAddToCart} activeOpacity={0.8}>
+              <Ionicons name="add" size={22} color="#fff" />
+            </TouchableOpacity>
+          </Animated.View>
+          {product.discountRate && (
+            <View style={styles.discountBadge}>
+              <Text style={styles.discountText}>-%{product.discountRate}</Text>
+            </View>
+          )}
+          {imageList.length > 1 && (
+            <View style={styles.dotsContainer}>
+              {imageList.map((_, i) => (
+                <View
+                  key={i}
+                  style={[styles.dot, i === activeIndex && styles.activeDot]}
+                />
+              ))}
+            </View>
           )}
         </View>
-        <View style={styles.ratingRow}>
-          {Array.from({ length: 5 }).map((_, i) => {
-            const starValue = i + 1;
-            const isFull = starValue <= Math.floor(product.rating || 0);
-            const isHalf =
-              product.rating &&
-              product.rating % 1 >= 0.5 &&
-              starValue === Math.ceil(product.rating);
-            return (
-              <Ionicons
-                key={i}
-                name={isFull ? "star" : isHalf ? "star-half" : "star-outline"}
-                size={14}
-                color="#FFD700"
-              />
-            );
-          })}
-          <Text style={styles.ratingText}>
-            {product.rating?.toFixed(1)} ({product.ratingCount})
+        {/* 🔹 Bilgi alanı */}
+        <View style={styles.info}>
+          <Text style={styles.name} numberOfLines={1}>
+            {product.name}
+          </Text>
+
+          <View style={styles.priceRow}>
+            {product.discountRate ? (
+              <>
+                <Text style={styles.oldPrice}>{product.originalPrice} ₺</Text>
+                <Text style={styles.newPrice}>{product.price} ₺</Text>
+              </>
+            ) : (
+              <Text style={styles.newPrice}>{product.price} ₺</Text>
+            )}
+          </View>
+          <View style={styles.ratingRow}>
+            {Array.from({ length: 5 }).map((_, i) => {
+              const starValue = i + 1;
+              const isFull = starValue <= Math.floor(product.rating || 0);
+              const isHalf =
+                product.rating &&
+                product.rating % 1 >= 0.5 &&
+                starValue === Math.ceil(product.rating);
+              return (
+                <Ionicons
+                  key={i}
+                  name={isFull ? "star" : isHalf ? "star-half" : "star-outline"}
+                  size={14}
+                  color="#FFD700"
+                />
+              );
+            })}
+            <Text style={styles.ratingText}>
+              {product.rating?.toFixed(1)} ({product.ratingCount})
+            </Text>
+          </View>
+
+          <Text
+            style={[
+              styles.shippingText,
+              {
+                color:
+                  product.shippingInfo === "Bugün kargoda"
+                    ? "#2e7d32"
+                    : "#6a1b9a",
+              },
+            ]}
+          >
+            {product.shippingInfo}
           </Text>
         </View>
-
-        <Text
-          style={[
-            styles.shippingText,
-            {
-              color:
-                product.shippingInfo === "Bugün kargoda"
-                  ? "#2e7d32"
-                  : "#6a1b9a",
-            },
-          ]}
-        >
-          {product.shippingInfo}
-        </Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  cardContainer: {
+    position: "relative",
+    overflow: "visible", // butonun görünmesini sağlar
+    marginBottom: 10,
+  },
   discountBadge: {
     position: "absolute",
     top: 8,
@@ -299,5 +336,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
     marginTop: 2,
+  },
+  addBtn: {
+    position: "absolute",
+    right: 8,
+    bottom: 8, // 🔹 görselin sağ altı
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#4CAF50",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.5,
+    elevation: 4,
   },
 });

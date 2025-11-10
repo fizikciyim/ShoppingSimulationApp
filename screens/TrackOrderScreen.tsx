@@ -130,6 +130,7 @@ export default function TrackOrderScreen() {
 
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
       contentContainerStyle={[
         styles.container,
         { backgroundColor: bgColor, minHeight: screenHeight },

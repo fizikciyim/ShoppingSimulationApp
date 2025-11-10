@@ -29,7 +29,11 @@ const SepetimScreen = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   const [summaryH, setSummaryH] = useState(0);
-
+  const getFirstImageUri = (item: any) => {
+    const first = Array.isArray(item.images) ? item.images[0] : item.image;
+    if (!first) return null;
+    return typeof first === "string" ? first : first?.uri;
+  };
   useFocusEffect(
     React.useCallback(() => {
       const checkLogin = async () => {
@@ -145,6 +149,7 @@ const SepetimScreen = () => {
       <FlatList
         data={cartItems}
         keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false} // 🔹 scrollbar'ı gizler
         contentContainerStyle={{
           paddingTop: 15,
           paddingHorizontal: 15,
@@ -161,9 +166,14 @@ const SepetimScreen = () => {
               },
             ]}
           >
-            {/* 🔹 artık image değil images[0] */}
-            <Image source={{ uri: item.images?.[0] }} style={styles.image} />
-
+            <Image
+              source={{
+                uri:
+                  getFirstImageUri(item) ??
+                  "https://via.placeholder.com/150?text=No+Image",
+              }}
+              style={styles.image}
+            />
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={[styles.name, { color: isDark ? "#fff" : "#333" }]}>
                 {item.name}

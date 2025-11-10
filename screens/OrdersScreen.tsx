@@ -70,8 +70,6 @@ export const getImageSource = (img: any) => {
   }
 };
 const OrdersScreen: React.FC = () => {
-  console.log("🧠 BASE_URL (OrdersScreen):", BASE_URL);
-
   const { isDark } = useDarkMode();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,7 +99,6 @@ const OrdersScreen: React.FC = () => {
             ? JSON.parse(order.items)
             : order.items,
       }));
-      console.log("📦 Gelen sipariş verisi:", parsedData);
 
       parsedData.forEach((order: any) => {
         fadeAnimations[order.id] = new Animated.Value(1);
@@ -315,6 +312,7 @@ const OrdersScreen: React.FC = () => {
       ) : (
         <FlatList
           data={filteredOrders}
+          showsVerticalScrollIndicator={false} // 🔹 scrollbar'ı gizler
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <Animated.View

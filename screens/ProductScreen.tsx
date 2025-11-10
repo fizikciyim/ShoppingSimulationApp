@@ -25,7 +25,7 @@ const { width } = Dimensions.get("window");
 
 export default function ProductScreen({ route }) {
   const { productId } = route.params;
-  const { addToCart, cartItems } = useCart();
+  const { addToCart } = useCart();
   const { isDark } = useDarkMode();
 
   const [product, setProduct] = useState<any>(null);
@@ -41,8 +41,6 @@ export default function ProductScreen({ route }) {
   const [added, setAdded] = useState(false);
   const [userName, setUserName] = useState("");
 
-  const cartItem = cartItems.find((item) => item.id === product?.id);
-  const quantityInCart = cartItem ? cartItem.quantity : 0;
   const imageWidth = width * 0.9;
 
   const [editingReview, setEditingReview] = useState(null); // düzenlenecek yorum
@@ -167,7 +165,6 @@ export default function ProductScreen({ route }) {
         comment: newComment,
         anonymous,
       };
-      console.log("Gönderilen veri:", review);
 
       const res = await fetch(`${BASE_URL}/api/reviews`, {
         method: "POST",

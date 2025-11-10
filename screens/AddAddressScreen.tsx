@@ -63,18 +63,6 @@ export default function AddAddressScreen({ navigation }: any) {
       ? `${BASE_URL}/update-address/${existingAddress.id}`
       : `${BASE_URL}/add-address`;
 
-    console.log("İstek URL:", url);
-    console.log("Gönderilen body:", {
-      title,
-      phone,
-      city,
-      district,
-      street,
-      building_no: buildingNo,
-      apartment_no: apartmentNo,
-    });
-    console.log("Token:", token);
-
     try {
       const response = await fetch(url, {
         method,
@@ -94,7 +82,6 @@ export default function AddAddressScreen({ navigation }: any) {
       });
 
       const data = await response.json();
-      console.log("Sunucu cevabı:", data);
 
       if (response.ok) {
         Alert.alert(

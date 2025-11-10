@@ -70,7 +70,10 @@ const ProfileScreen: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
   const styles = getStyles(isDark);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false} // 🔹 scrollbar'ı gizler
+    >
       {/* 👤 Profil Başlığı */}
       <View style={styles.header}>
         <Image source={require("../assets/logo.png")} style={styles.avatar} />
@@ -94,7 +97,6 @@ const ProfileScreen: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
           />
         </View>
       </View>
-
       {/* 🔹 Hesap Bölümü */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Hesap</Text>
@@ -134,7 +136,6 @@ const ProfileScreen: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
           <Ionicons name="chevron-forward" size={20} color="#aaa" />
         </TouchableOpacity>
       </View>
-
       {/* ⚙️ Ayarlar Bölümü */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Ayarlar</Text>
@@ -151,7 +152,6 @@ const ProfileScreen: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
           <Ionicons name="chevron-forward" size={20} color="#aaa" />
         </TouchableOpacity>
       </View>
-
       {/* 💬 Destek Bölümü */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Destek</Text>
@@ -190,7 +190,6 @@ const ProfileScreen: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
           <Ionicons name="chevron-forward" size={20} color="#aaa" />
         </TouchableOpacity>
       </View>
-
       {/* 🚪 Çıkış Yap Butonu */}
       <TouchableOpacity
         style={styles.logoutButton}
@@ -199,7 +198,6 @@ const ProfileScreen: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
         <Ionicons name="log-out-outline" size={22} color="#fff" />
         <Text style={styles.logoutText}>Çıkış Yap</Text>
       </TouchableOpacity>
-
       {/* 🔘 Modal */}
       <Modal transparent visible={logoutModalVisible} animationType="fade">
         <View style={styles.modalBackground}>

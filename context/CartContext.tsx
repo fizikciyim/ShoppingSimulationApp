@@ -6,7 +6,7 @@ interface Product {
   id: string;
   name: string;
   price: number;
-  image: any;
+  images?: string[]; // ✅ string URL dizisi
   quantity?: number;
 }
 
@@ -27,17 +27,39 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
   const [cartItems, setCartItems] = useState<Product[]>([]);
 
   const addToCart = (product: Product) => {
-    // 🔹 price her zaman number tipine çevriliyor
+    // 🔧 her zaman number
+    const fixedPrice = Number((product as any).price);
+
+    // 🔧 images => string[] normalizasyonu
+    const rawImages: any[] = Array.isArray((product as any).images)
+      ? (product as any).images
+      : [];
+
+    const normalizedImages: string[] = rawImages
+      .map((im) => (typeof im === "string" ? im : im?.uri))
+      .filter(Boolean);
+
+    // fallback tekil image alanı varsa onu da ekle
+    const singleImage = (product as any).image;
+    if (!normalizedImages.length && singleImage) {
+      normalizedImages.push(
+        typeof singleImage === "string" ? singleImage : singleImage?.uri
+      );
+    }
+
     const fixedProduct = {
-      ...product,
-      price: Number(product.price),
+      ...(product as any),
+      price: fixedPrice,
+      images: normalizedImages, // ✅ artık her zaman string[]
     };
 
     setCartItems((prev) => {
       const exists = prev.find((p) => p.id === fixedProduct.id);
       if (exists) {
         return prev.map((p) =>
-          p.id === fixedProduct.id ? { ...p, quantity: p.quantity! + 1 } : p
+          p.id === fixedProduct.id
+            ? { ...p, quantity: (p.quantity ?? 1) + 1 }
+            : p
         );
       } else {
         return [...prev, { ...fixedProduct, quantity: 1 }];
