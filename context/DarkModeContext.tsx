@@ -14,8 +14,6 @@ const DarkModeContext = createContext<DarkModeContextType>({
 export const DarkModeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const colorScheme = Appearance.getColorScheme();
-  // const [isDark, setIsDark] = useState(colorScheme === "dark");
   const [isDark, setIsDark] = useState(false);
 
   // sistem teması değiştiğinde otomatik güncelle

@@ -20,6 +20,7 @@
     "expo": "54.0.23",
     "expo-checkbox": "^5.0.7",
     "expo-linear-gradient": "~15.0.7",
+    "expo-splash-screen": "~31.0.10",
     "expo-status-bar": "~3.0.8",
     "lottie-react-native": "^7.3.4",
     "node-fetch": "^3.3.2",
@@ -44,9 +45,17 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@react-native-community/cli": "^20.0.2",
     "@types/react": "~19.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
     "babel-preset-expo": "^54.0.6",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-native": "^5.0.0",
+    "globals": "^16.5.0",
     "react-native-unused-styles": "^2.0.4",
     "typescript": "~5.9.2"
   },

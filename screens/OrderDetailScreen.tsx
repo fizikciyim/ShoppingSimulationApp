@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -81,7 +81,7 @@ const OrderDetailScreen = ({ route }: any) => {
   };
 
   // 🔹 Backend'den anlık durumu al
-  const fetchOrderStatus = async () => {
+  const fetchOrderStatus = useCallback(async () => {
     try {
       let token;
       if (Platform.OS === "web") {
@@ -97,6 +97,7 @@ const OrderDetailScreen = ({ route }: any) => {
         },
       });
       const data = await res.json();
+
       if (data && data.status) {
         setOrder((prev: any) => ({
           ...prev,
@@ -109,13 +110,13 @@ const OrderDetailScreen = ({ route }: any) => {
     } catch (err) {
       console.error("Sipariş durumu alınamadı:", err);
     }
-  };
+  }, [order.id]); // 🔹 sadece order.id değişirse yeniden oluşturulsun
 
   useEffect(() => {
     fetchOrderStatus();
     const interval = setInterval(fetchOrderStatus, 8000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchOrderStatus]); // ✅ artık uyarı yok
 
   const totalPrice = Array.isArray(order.items)
     ? order.items.reduce(

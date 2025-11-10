@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -54,7 +54,7 @@ export default function ProductScreen({ route }) {
     setTimeout(() => setAdded(false), 1500);
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const resProduct = await fetch(`${BASE_URL}/api/products/${productId}`);
       const productData = await resProduct.json();
@@ -81,15 +81,10 @@ export default function ProductScreen({ route }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId]); // 🔹 sadece ürün değiştiğinde yeniden tanımlanır
 
-  useEffect(() => {
-    fetchData();
-    loadFavoriteStatus();
-    loadUser();
-  }, [productId]);
-
-  const loadFavoriteStatus = async () => {
+  // ✅ 2. Favori durumu
+  const loadFavoriteStatus = useCallback(async () => {
     try {
       let stored;
       if (Platform.OS === "web") stored = localStorage.getItem("favorites");
@@ -101,8 +96,10 @@ export default function ProductScreen({ route }) {
     } catch (err) {
       console.error("Favori durumu alınamadı:", err);
     }
-  };
-  const loadUser = async () => {
+  }, [productId]); // ürün değişince favori kontrolü güncellenir
+
+  // ✅ 3. Kullanıcı yükleme
+  const loadUser = useCallback(async () => {
     try {
       let stored;
 
@@ -114,7 +111,6 @@ export default function ProductScreen({ route }) {
 
       if (stored) {
         const user = JSON.parse(stored);
-        // 🔹 username varsa onu kullan
         setUserName(user.username || user.name || "Anonim");
       } else {
         setUserName("Anonim");
@@ -123,7 +119,14 @@ export default function ProductScreen({ route }) {
       console.error("Kullanıcı bilgisi alınamadı:", err);
       setUserName("Anonim");
     }
-  };
+  }, []); // kullanıcı sabit kalır, dependency gerekmez
+
+  // ✅ useEffect artık tam uyumlu
+  useEffect(() => {
+    fetchData();
+    loadFavoriteStatus();
+    loadUser();
+  }, [fetchData, loadFavoriteStatus, loadUser]);
 
   const toggleFavorite = async () => {
     try {
@@ -181,7 +184,7 @@ export default function ProductScreen({ route }) {
         Alert.alert("Teşekkürler", "Yorumunuz eklendi!");
       } else Alert.alert("Hata", data.error || "Yorum eklenemedi");
     } catch (err) {
-      Alert.alert("Hata", "Sunucuya bağlanılamadı");
+      Alert.alert("Hata", "Sunucuya bağlanılamadı: ", err);
     }
   };
   // 🗑️ Yorum sil
@@ -218,8 +221,8 @@ export default function ProductScreen({ route }) {
       }
     } catch (err) {
       Platform.OS === "web"
-        ? alert("Sunucuya bağlanılamadı.")
-        : Alert.alert("Hata", "Sunucuya bağlanılamadı.");
+        ? alert("Sunucuya bağlanılamadı: ", err)
+        : Alert.alert("Hata", "Sunucuya bağlanılamadı:", err);
     }
   };
   const handleEditReview = (review) => {
@@ -258,7 +261,7 @@ export default function ProductScreen({ route }) {
         Alert.alert("Hata", data.error || "Düzenleme başarısız.");
       }
     } catch (err) {
-      Alert.alert("Hata", "Sunucuya bağlanılamadı.");
+      Alert.alert("Hata", "Sunucuya bağlanılamadı: ", err);
     }
   };
   const renderStars = (value, editable = false, onChange) => (

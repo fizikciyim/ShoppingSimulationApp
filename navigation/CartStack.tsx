@@ -1,7 +1,6 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import SepetimScreen from "../screens/SepetimScreen";
-import ProductScreen from "../screens/ProductScreen";
 import CheckoutScreen from "../screens/CheckoutScreen";
 
 const Stack = createNativeStackNavigator();

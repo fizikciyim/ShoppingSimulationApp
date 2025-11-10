@@ -6,7 +6,7 @@ const RegisterScreen: React.FC = ({ navigation }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { isDark, toggleTheme } = useDarkMode(); // ✅ hook ile dark mode durumu
+  const { isDark } = useDarkMode(); // ✅ hook ile dark mode durumu
 
   const handleRegister = async () => {
     if (!username || !password || !confirmPassword) {

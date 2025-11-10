@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -82,7 +82,7 @@ export default function TrackOrderScreen() {
     return item?.at ? formatTime(item.at) : "—";
   };
 
-  const loadOrder = async () => {
+  const loadOrder = useCallback(async () => {
     try {
       let token;
       if (Platform.OS === "web") {
@@ -119,13 +119,21 @@ export default function TrackOrderScreen() {
         }),
       ]).start();
     }
-  };
+    // useRef ile oluşturulduğu için fadeAnim/translateY sabit referans —
+    // eklemek güvenlidir ve uyarıyı da susturur.
+  }, [orderId, fadeAnim, translateY]);
 
+  // ⬇️ effect'te artık loadOrder'a bağımlan
   useEffect(() => {
     loadOrder();
-    const interval = setInterval(loadOrder, 8000);
-    return () => clearInterval(interval);
-  }, [orderId]);
+
+    // interval tipini TS uyumlu yap
+    const intervalId: ReturnType<typeof setInterval> = setInterval(
+      loadOrder,
+      8000
+    );
+    return () => clearInterval(intervalId);
+  }, [loadOrder]);
 
   if (loading)
     return (

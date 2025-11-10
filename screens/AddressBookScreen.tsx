@@ -51,7 +51,7 @@ export default function AddressBookScreen({ navigation }: any) {
           }),
         ])
       ).start();
-    }, [])
+    }, [fadeAnim, glowAnim]) // ✅ bağımlılıklar eklendi
   );
 
   const loadAddresses = async () => {
@@ -329,14 +329,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 4,
   },
-
-  mainBadgeText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
-    marginLeft: 4,
-  },
-
   container: { flex: 1, padding: 16 },
   card: {
     padding: 16,

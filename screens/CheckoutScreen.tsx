@@ -15,7 +15,6 @@ import { useFocusEffect, CommonActions } from "@react-navigation/native";
 import OrderSuccessModal from "../components/OrderSuccessModal";
 import { useCart } from "../context/CartContext";
 import { useDarkMode } from "../context/DarkModeContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { termsText } from "../termsText";
 import { TouchableWithoutFeedback } from "react-native";
 import { BASE_URL } from "../config"; // veya ../../config (dosyanın konumuna göre)
@@ -533,12 +532,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 6,
     elevation: 5,
-  },
-  modalBackground: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
   },
   cartImage: {
     width: 40,

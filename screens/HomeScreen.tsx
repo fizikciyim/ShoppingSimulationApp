@@ -7,7 +7,6 @@ import {
   Animated,
   Easing,
   ActivityIndicator,
-  TouchableOpacity,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useDarkMode } from "../context/DarkModeContext";
@@ -59,7 +58,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, scaleAnim]);
 
   if (loading) {
     return (

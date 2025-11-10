@@ -35,7 +35,7 @@ const FeedbackScreen: React.FC = () => {
 
   const [successVisible, setSuccessVisible] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showSuccess = () => {
     setSuccessVisible(true);

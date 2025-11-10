@@ -20,7 +20,7 @@ export default function SubcategoryScreen({ route, navigation }: any) {
 
   useEffect(() => {
     navigation.setOptions({ title: categoryName });
-  }, [categoryName]);
+  }, [navigation, categoryName]);
 
   useEffect(() => {
     const fetchSubcategories = async () => {
@@ -101,7 +101,7 @@ const AnimatedCard = ({ item, isDark, onPress }: any) => {
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [opacityAnim]);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {

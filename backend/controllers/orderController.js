@@ -27,8 +27,8 @@ const STEPS = [
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const hoursToMs = (minH, maxH) => {
-  const h = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
-  return h * 60 * 60 * 1000;
+  const h = Math.random() * (maxH - minH) + minH; // kesirli değer üretir
+  return h * 60 * 60 * 1000; // saati milisaniyeye çevir
 };
 
 /**
@@ -160,7 +160,7 @@ async function simulateOrderProgress(orderId) {
   const eventIndex = Math.floor(Math.random() * (STEPS.length - 2)) + 1;
 
   for (let i = 1; i < STEPS.length; i++) {
-    await sleep(hoursToMs(3, 6)); // 3–6 saat arası rastgele bekleme
+    await sleep(hoursToMs(5, 24)); // 5–24 saat arası rastgele bekleme
 
     if (i === eventIndex) {
       const currentStep = STEPS[i];

@@ -3,16 +3,16 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// ?? Sabit BASE_URL (DigitalOcean IP'si veya .env üzerinden)
+// ?? Sabit BASE_URL (DigitalOcean IP'si veya .env ï¿½zerinden)
 const BASE_URL = process.env.BASE_URL || "http://146.190.236.239:5050";
 
-// ?? Tüm kategorileri getir
+// ?? Tï¿½m kategorileri getir
 export const getCategories = async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM categories ORDER BY id ASC");
 
     const categories = rows.map((cat) => {
-      // ?? icon_names güvenli parse
+      // ?? icon_names gï¿½venli parse
       let icons = [];
       try {
         if (cat.icon_names) {
@@ -22,8 +22,8 @@ export const getCategories = async (req, res) => {
             icons = cat.icon_names;
           }
         }
-      } catch (e) {
-        console.error("?? icon_names parse hatasý:", cat.icon_names);
+      } catch (err) {
+        console.error("icon_names parse hatasÄ±:", cat.icon_names, err);
       }
 
       return {
@@ -39,8 +39,8 @@ export const getCategories = async (req, res) => {
 
     res.json(categories);
   } catch (error) {
-    console.error("? Kategoriler alýnamadý:", error);
-    res.status(500).json({ message: "Kategoriler alýnýrken hata oluþtu." });
+    console.error("? Kategoriler alï¿½namadï¿½:", error);
+    res.status(500).json({ message: "Kategoriler alï¿½nï¿½rken hata oluï¿½tu." });
   }
 };
 // ?? Bir ana kategoriye ait alt kategorileri getir
@@ -55,7 +55,7 @@ export const getSubcategoriesByCategory = async (req, res) => {
 
     res.json(rows);
   } catch (error) {
-    console.error("? Alt kategoriler alýnamadý:", error);
-    res.status(500).json({ message: "Alt kategoriler alýnýrken hata oluþtu." });
+    console.error("? Alt kategoriler alï¿½namadï¿½:", error);
+    res.status(500).json({ message: "Alt kategoriler alï¿½nï¿½rken hata oluï¿½tu." });
   }
 };

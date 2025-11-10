@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -79,7 +79,7 @@ const OrdersScreen: React.FC = () => {
   const fadeAnimations = useRef<{ [key: number]: Animated.Value }>({}).current;
   const [showActiveOnly, setShowActiveOnly] = useState(false);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       let token;
       if (Platform.OS === "web") token = localStorage.getItem("token");
@@ -100,6 +100,7 @@ const OrdersScreen: React.FC = () => {
             : order.items,
       }));
 
+      // 🔹 Her sipariş için fade animasyonu oluştur
       parsedData.forEach((order: any) => {
         fadeAnimations[order.id] = new Animated.Value(1);
       });
@@ -110,7 +111,12 @@ const OrdersScreen: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fadeAnimations]); // 🔹 sadece fadeAnimations referansı değişirse yeniden oluşturulsun
+
+  // ✅ useEffect artık güvenli
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const normalize = (s: any) =>
     (s ?? "")
@@ -142,9 +148,6 @@ const OrdersScreen: React.FC = () => {
           normalize(order.status) !== "teslim edildi"
       )
     : orders;
-  useEffect(() => {
-    fetchOrders();
-  }, []);
 
   const handleDelete = async () => {
     if (!selectedOrderId) return;

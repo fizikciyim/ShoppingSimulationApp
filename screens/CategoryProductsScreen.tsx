@@ -134,8 +134,6 @@ const CategoryProductsScreen: React.FC<Props> = ({ route, navigation }) => {
   // FlatList görünür alan genişliği
   const [listWidth, setListWidth] = useState(0);
 
-  const activeKey = activeSubId ? String(activeSubId) : "all";
-
   const centerActiveChip = () => {
     if (!subRef.current || !listWidth) return;
 

@@ -13,7 +13,6 @@ import Toast from "react-native-toast-message";
 
 import HomeStack from "./HomeStack";
 import CartStack from "./CartStack";
-import SettingsScreen from "../screens/SettingsScreen";
 import ProfileStack from "./ProfileStack";
 import { useCart } from "../context/CartContext";
 import { DarkModeProvider, useDarkMode } from "../context/DarkModeContext";
@@ -52,7 +51,6 @@ const TabNavigator = () => {
           let iconName: any = "home-outline";
           if (route.name === "Ana Sayfa") iconName = "home-outline";
           if (route.name === "Sepetim") iconName = "cart-outline";
-          // if (route.name === "Ayarlar") iconName = "settings-outline";
           if (route.name === "Profil") iconName = "person-outline";
 
           // 🔹 Sepet rozeti

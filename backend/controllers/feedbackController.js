@@ -4,19 +4,19 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = "supersecretkey";
 
-// ?? Kullanýcý geri bildirimi kaydet
+// ?? Kullanï¿½cï¿½ geri bildirimi kaydet
 export const saveFeedback = async (req, res) => {
   try {
-    const { category = "Diðer", message = "", email = "" } = req.body;
+    const { category = "Diï¿½er", message = "", email = "" } = req.body;
 
-    // Boþ mesaj kontrolü
+    // Boï¿½ mesaj kontrolï¿½
     if (!message.trim()) {
       return res
         .status(400)
-        .json({ success: false, message: "Mesaj boþ olamaz." });
+        .json({ success: false, message: "Mesaj boï¿½ olamaz." });
     }
 
-    // Eðer kullanýcý giriþ yapmýþsa token'dan user_id al
+    // Eï¿½er kullanï¿½cï¿½ giriï¿½ yapmï¿½ï¿½sa token'dan user_id al
     let userId = null;
     const authHeader = req.headers.authorization;
 
@@ -26,21 +26,25 @@ export const saveFeedback = async (req, res) => {
         const decoded = jwt.verify(token, JWT_SECRET);
         userId = decoded.id;
       } catch (err) {
-        console.warn("Geçersiz token, anonim geri bildirim olarak kaydediliyor.");
+        console.warn(
+          "GeÃ§ersiz token, anonim geri bildirim olarak kaydediliyor: ",
+          err
+        );
       }
     }
 
-    // Veritabanýna kaydet
+    // Veritabanï¿½na kaydet
     await db.query(
       "INSERT INTO feedbacks (user_id, category, message, email) VALUES (?, ?, ?, ?)",
       [userId, category, message, email || null]
     );
 
-    res.json({ success: true, message: "Geri bildirim baþarýyla kaydedildi." });
+    res.json({ success: true, message: "Geri bildirim baï¿½arï¿½yla kaydedildi." });
   } catch (error) {
-    console.error("Geri bildirim kaydetme hatasý:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Sunucu hatasý. Lütfen tekrar deneyin." });
+    console.error("Geri bildirim kaydetme hatasï¿½:", error);
+    res.status(500).json({
+      success: false,
+      message: "Sunucu hatasï¿½. Lï¿½tfen tekrar deneyin.",
+    });
   }
 };
