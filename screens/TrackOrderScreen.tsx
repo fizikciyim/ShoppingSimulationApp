@@ -34,6 +34,54 @@ export default function TrackOrderScreen() {
     { title: "Teslim Edildi", icon: "home-outline" },
   ];
 
+  // 🔹 "2025-11-10 14:30:12" -> "10.11 14:30"
+  const formatTime = (s?: string) => {
+    if (!s) return "—";
+    const iso = s.includes("T") ? s : s.replace(" ", "T");
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "—";
+
+    const months = [
+      "Ocak",
+      "Şubat",
+      "Mart",
+      "Nisan",
+      "Mayıs",
+      "Haziran",
+      "Temmuz",
+      "Ağustos",
+      "Eylül",
+      "Ekim",
+      "Kasım",
+      "Aralık",
+    ];
+
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = months[d.getMonth()];
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+
+    return `${day} ${month} ${hours}:${minutes}`;
+  };
+
+  // 🔹 Backend bazen dizi (JSON) bazen string dönebilir; ikisini de karşıla.
+  const getHistoryArray = () => {
+    const h = order?.step_history as any;
+    if (Array.isArray(h)) return h;
+    if (typeof h === "string") {
+      try {
+        return JSON.parse(h);
+      } catch {}
+    }
+    return [];
+  };
+
+  // 🔹 Verilen adım başlığı için step_history'den zamanı çek
+  const timeForStep = (title: string) => {
+    const item = getHistoryArray().find((x: any) => x?.title === title);
+    return item?.at ? formatTime(item.at) : "—";
+  };
+
   const loadOrder = async () => {
     try {
       let token;
@@ -130,7 +178,6 @@ export default function TrackOrderScreen() {
 
   return (
     <ScrollView
-      showsVerticalScrollIndicator={false}
       contentContainerStyle={[
         styles.container,
         { backgroundColor: bgColor, minHeight: screenHeight },
@@ -191,32 +238,46 @@ export default function TrackOrderScreen() {
                     isDark && { shadowColor: "rgba(255,255,255,0.1)" },
                   ]}
                 >
-                  <View style={styles.stepHeader}>
+                  <View
+                    style={[
+                      styles.stepHeader,
+                      { justifyContent: "space-between" },
+                    ]}
+                  >
                     <View
-                      style={[
-                        styles.iconContainer,
-                        step.status === "done"
-                          ? { backgroundColor: "#4CAF50" }
-                          : step.status === "current"
-                          ? { backgroundColor: "#F44336" }
-                          : step.status === "active"
-                          ? { backgroundColor: "#2196F3" }
-                          : { backgroundColor: "#757575" },
-                      ]}
+                      style={{ flexDirection: "row", alignItems: "center" }}
                     >
-                      <Ionicons
-                        name={step.icon as any}
-                        size={24}
-                        color="#fff"
-                      />
+                      <View
+                        style={[
+                          styles.iconContainer,
+                          step.status === "done"
+                            ? { backgroundColor: "#4CAF50" }
+                            : step.status === "current"
+                            ? { backgroundColor: "#F44336" }
+                            : step.status === "active"
+                            ? { backgroundColor: "#2196F3" }
+                            : { backgroundColor: "#757575" },
+                        ]}
+                      >
+                        <Ionicons
+                          name={step.icon as any}
+                          size={24}
+                          color="#fff"
+                        />
+                      </View>
+                      <Text
+                        style={[
+                          styles.stepTitle,
+                          { color: isDark ? "#fff" : "#333" },
+                        ]}
+                      >
+                        {step.title}
+                      </Text>
                     </View>
-                    <Text
-                      style={[
-                        styles.stepTitle,
-                        { color: isDark ? "#fff" : "#333" },
-                      ]}
-                    >
-                      {step.title}
+
+                    {/* ⏰ SAAT */}
+                    <Text style={styles.stepTime}>
+                      {timeForStep(step.title)}
                     </Text>
                   </View>
 
@@ -325,4 +386,9 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  stepTime: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#616161", // light
+  },
 });

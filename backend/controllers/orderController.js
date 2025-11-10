@@ -52,9 +52,15 @@ export const createOrder = async (req, res) => {
     const order_number = generateOrderNumber();
     const [result] = await db.query(
       `INSERT INTO orders (
-        order_number, user_id, address_id, items, total_price, payment_method,
-        order_note, status, has_event, event_text, event_index, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'Sipariş Alındı', 0, NULL, NULL, NOW(), NOW())`,
+  order_number, user_id, address_id, items, total_price, payment_method,
+  order_note, status, has_event, event_text, event_index, step_history,
+  created_at, updated_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, 'Sipariş Alındı', 0, NULL, NULL,
+  JSON_ARRAY(JSON_OBJECT(
+    'title','Sipariş Alındı',
+    'at', DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 3 HOUR), '%Y-%m-%d %H:%i:%s')
+  )),
+  NOW(), NOW())`,
       [
         order_number,
         user_id,
@@ -167,9 +173,23 @@ async function simulateOrderProgress(orderId) {
 
       await db.query(
         `UPDATE orders
-         SET status='İptal Edildi', has_event=1, event_text=?, event_index=?, updated_at=NOW()
-         WHERE id=?`,
-        [event, eventIndex, orderId]
+           SET status='İptal Edildi',
+               has_event=1,
+               event_text=?,
+               event_index=?,
+               step_history = JSON_ARRAY_APPEND(
+                 COALESCE(step_history, JSON_ARRAY()),
+                 '$',
+                 JSON_OBJECT(
+                   'title', ?,
+'at', DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 3 HOUR), '%Y-%m-%d %H:%i:%s'),
+                   'event', ?,
+                   'cancelled', true
+                 )
+               ),
+               updated_at=NOW()
+           WHERE id=?`,
+        [event, eventIndex, STEPS[i], event, orderId]
       );
 
       console.log(
@@ -178,10 +198,21 @@ async function simulateOrderProgress(orderId) {
       return;
     }
 
-    await db.query(`UPDATE orders SET status=?, updated_at=NOW() WHERE id=?`, [
-      STEPS[i],
-      orderId,
-    ]);
+    await db.query(
+      `UPDATE orders
+       SET status=?,
+           step_history = JSON_ARRAY_APPEND(
+             COALESCE(step_history, JSON_ARRAY()),
+             '$',
+             JSON_OBJECT(
+               'title', ?,
+'at', DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 3 HOUR), '%Y-%m-%d %H:%i:%s')
+             )
+           ),
+           updated_at=NOW()
+       WHERE id=?`,
+      [STEPS[i], STEPS[i], orderId]
+    );
   }
 
   const fallbackEvent = "Bilinmeyen bir hata nedeniyle sipariş iptal edildi.";
@@ -253,7 +284,9 @@ export const getOrderStatus = async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      "SELECT order_number, status, has_event, event_text, event_index FROM orders WHERE id = ? AND user_id = ?",
+      `SELECT order_number, status, has_event, event_text, event_index, step_history
+       FROM orders
+       WHERE id = ? AND user_id = ?`,
       [id, user_id]
     );
 
@@ -262,7 +295,14 @@ export const getOrderStatus = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Sipariş bulunamadı." });
 
-    res.json(rows[0]);
+    const row = rows[0];
+    if (row.step_history && typeof row.step_history === "string") {
+      try {
+        row.step_history = JSON.parse(row.step_history);
+      } catch {}
+    }
+
+    res.json(row);
   } catch (err) {
     console.error("Durum sorgulama hatası:", err);
     res.status(500).json({ success: false, message: "Sunucu hatası" });

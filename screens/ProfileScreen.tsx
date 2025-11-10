@@ -239,7 +239,10 @@ const ProfileScreen: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
           <View
             style={[
               styles.modalContainer,
-              { alignItems: "stretch", paddingBottom: 0 },
+              {
+                alignItems: "stretch",
+                height: "85%", // 🔹 Sabit yükseklik veriyoruz
+              },
             ]}
           >
             <Ionicons
@@ -253,41 +256,52 @@ const ProfileScreen: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
             </Text>
             <View
               style={{
-                height: 3, // 🔹 biraz daha kalın
-                backgroundColor: isDark ? "#4CAF50" : "#2e7d32", // 🔹 yeşil tonuyla vurgulu
-                width: "85%", // 🔹 biraz daha uzun
+                height: 3,
+                backgroundColor: isDark ? "#4CAF50" : "#2e7d32",
+                width: "85%",
                 alignSelf: "center",
                 marginBottom: 12,
-                borderRadius: 2, // 🔹 yumuşak kenar
+                borderRadius: 2,
               }}
             />
 
-            <ScrollView
-              style={{ maxHeight: 400, width: "100%" }}
-              contentContainerStyle={{
-                paddingHorizontal: 15,
-                paddingBottom: 15,
-              }}
-              showsVerticalScrollIndicator={false}
-            >
-              <Text style={[styles.modalText, { textAlign: "left" }]}>
-                {aboutText}
-              </Text>
-            </ScrollView>
+            {/* 🔹 ScrollView tam görünür olacak */}
+            <View style={{ flex: 1, marginBottom: 10 }}>
+              <ScrollView
+                style={{ flex: 1 }}
+                showsVerticalScrollIndicator={false} // ✅ scrollbar gizlendi
+                contentContainerStyle={{
+                  paddingHorizontal: 15,
+                  paddingBottom: 20,
+                }}
+              >
+                <Text
+                  style={[
+                    styles.modalText,
+                    {
+                      textAlign: "left",
+                      lineHeight: 22,
+                      color: isDark ? "#eee" : "#333",
+                    },
+                  ]}
+                >
+                  {aboutText}
+                </Text>
+              </ScrollView>
+            </View>
 
             <TouchableOpacity
-              style={[
-                styles.modalButton,
-                {
-                  backgroundColor: "#4CAF50",
-                  marginHorizontal: 15,
-                  marginTop: 10,
-                  marginBottom: 15,
-                },
-              ]}
+              style={{
+                backgroundColor: "#4CAF50",
+                borderRadius: 8,
+                alignItems: "center",
+                paddingVertical: 12,
+                marginHorizontal: 15,
+                marginBottom: 15,
+              }}
               onPress={() => setAboutModalVisible(false)}
             >
-              <Text style={[styles.modalButtonText, { color: "#fff" }]}>
+              <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 15 }}>
                 Kapat
               </Text>
             </TouchableOpacity>
@@ -392,11 +406,13 @@ const getStyles = (isDark: boolean) =>
     modalContainer: {
       backgroundColor: isDark ? "#1E1E1E" : "#fff",
       borderRadius: 12,
-      padding: 10, // 🔹 önce 25’ti, biraz artırdık
+      paddingVertical: 15,
+      paddingHorizontal: 10,
       alignItems: "center",
-      width: "90%", // 🔹 önce 80% idi, artık daha geniş
-      maxHeight: "90%", // 🔹 uzun yazılar için daha fazla yer
+      width: "90%",
+      maxHeight: Platform.OS === "ios" ? "85%" : "80%", // biraz daha kısa
     },
+
     modalTitle: {
       fontSize: 18,
       fontWeight: "bold",
