@@ -174,13 +174,23 @@ Projede `BASE_URL` değeri `app.config.js` üzerinden dinamik olarak eklenir.
 
 <div align="center">
 
-![Ürünler](./assets/screenshots/1.jpg)
-![Sepetim](./assets/screenshots/2.jpg)
-![Profilim](./assets/screenshots/3.jpg)
-![Siparişlerim](./assets/screenshots/4.jpg)
-![Sipariş Detayı](./assets/screenshots/5.jpg)
-![Kargo Takibi](./assets/screenshots/6.jpg)
-![Karanlık Tema](./assets/screenshots/7.png)
+<table>
+  <tr>
+    <td><img src="./assets/screenshots/1.jpg" width="250" style="border-radius:12px;"/></td>
+    <td><img src="./assets/screenshots/2.jpg" width="250" style="border-radius:12px;"/></td>
+    <td><img src="./assets/screenshots/3.jpg" width="250" style="border-radius:12px;"/></td>
+  </tr>
+  <tr>
+    <td><img src="./assets/screenshots/4.jpg" width="250" style="border-radius:12px;"/></td>
+    <td><img src="./assets/screenshots/5.jpg" width="250" style="border-radius:12px;"/></td>
+    <td><img src="./assets/screenshots/6.jpg" width="250" style="border-radius:12px;"/></td>
+  </tr>
+  <tr>
+    <td colspan="3" align="center">
+      <img src="./assets/screenshots/7.jpg" width="250" style="border-radius:12px;"/>
+    </td>
+  </tr>
+</table>
 
 </div>
 
