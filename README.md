@@ -172,13 +172,22 @@ Projede `BASE_URL` değeri `app.config.js` üzerinden dinamik olarak eklenir.
 
 ## 📸 Ekran Görüntüleri
 
+<div align="center">
 
+![Ürünler](./assets/screenshots/1.jpg)
+![Sepetim](./assets/screenshots/2.jpg)
+![Profilim](./assets/screenshots/3.jpg)
+![Siparişlerim](./assets/screenshots/4.jpg)
+![Sipariş Detayı](./assets/screenshots/5.jpg)
+![Kargo Takibi](./assets/screenshots/6.jpg)
+![Karanlık Tema](./assets/screenshots/7.png)
+
+</div>
 
 ---
 
 ## 🔒 Güvenlik Notları
 
-- `.env` dosyası `.gitignore` içinde, **hiçbir zaman repoya yüklenmez**
 - JWT token süresi otomatik kontrol edilir
 - CORS yapılandırması güvenli şekilde ayarlanmıştır
 - Veritabanı bağlantısı `mysql2/promise` ile havuz (pool) yapısında
