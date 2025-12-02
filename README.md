@@ -1,5 +1,6 @@
 # 🛍️ FakeShopApp – Alışveriş Simülasyonu (Full Stack E-Ticaret Uygulaması)
 
+(React Native + AWS Lambda + RDS + S3)
 FakeShopApp, **React Native (Expo)** ve **Node.js (Express + MySQL)** kullanılarak geliştirilmiş modern bir **mobil e-ticaret simülasyonu** projesidir.  
 Kullanıcılar ürünleri inceleyebilir, sepete ekleyebilir, sipariş verebilir, kargo takibini görüntüleyebilir ve geri bildirim gönderebilir.  
 Tamamen **backend bağlantılı, dinamik, karanlık mod destekli** ve **responsive tasarımlı** bir uygulamadır.
@@ -46,26 +47,70 @@ Tamamen **backend bağlantılı, dinamik, karanlık mod destekli** ve **responsi
 
 ---
 
+## 🚀 Yeni Mimari: DigitalOcean → AWS Migration
+
+Bu proje önceden DigitalOcean üzerinde çalışan Node.js Express API kullanan bir yapıdaydı.
+Sistem tamamen yeniden tasarlanarak AWS Serverless mimarisine taşındı:
+
+- AWS Lambda – Backend fonksiyonları
+- Amazon API Gateway – HTTP endpointler
+- Amazon RDS (MySQL) – Veritabanı
+- Amazon S3 – Ürün görselleri
+- IAM – Güvenli erişim yönetimi
+
+Bu değişiklikler ile:
+
+- Sunucu maliyetleri %90+ azaldı
+- API artık tamamen ölçeklenebilir
+- Static image sistemi S3’e taşındı
+- Backend tarafında normalizeImages otomatik düzeltici ile eski shopapi URL’leri tamamen temizlendi
+- Tüm yeni siparişler artık AWS S3 URL’leri ile kaydediliyor
+- Veritabanındaki eski URL'ler REPLACE ile düzenlendi
+
 ## 🧱 Kullanılan Teknolojiler
 
-### 🖥️ Frontend (React Native – Expo)
+### 🖥️ Frontend – React Native (Expo)
 
 - React Native + TypeScript
-- Expo Router & Native Stack Navigation
-- AsyncStorage (yerel oturum yönetimi)
+- Expo Router
+- AsyncStorage
+- Context API
 - Lottie Animations
-- Context API (Dark Mode, Cart Context)
 - Ionicons
-- EAS Build (Android APK üretimi)
+- Expo EAS Build (APK üretimi)
 
-### ⚙️ Backend (Node.js + Express)
+---
 
-- Express.js RESTful API
-- MySQL (mysql2/promise) bağlantısı
-- JWT kimlik doğrulama
-- CORS yapılandırması
-- Statik dosya servisleri (`/productImages`, `/categoriesImages`)
-- Cron Jobs (node-cron ile günlük indirim üretimi)
+### ⚙️ Backend – AWS Serverless
+
+_(DigitalOcean → AWS migration sonrası)_
+
+#### ✔️ AWS Lambda
+
+REST API fonksiyonları artık tamamen Lambda üzerinde çalışıyor.
+
+#### ✔️ AWS API Gateway
+
+Tüm HTTP endpoint'ler buradan yönetiliyor:  
+**https://gdu2vdhta8.execute-api.eu-west-2.amazonaws.com**
+
+#### ✔️ AWS RDS (MySQL)
+
+- orders, users, products, reviews, feedbacks, addresses…
+- Bağlantı havuzu (pool) yapılandırıldı
+- Soğuk başlangıç (cold start) optimizasyonu uygulandı
+
+#### ✔️ AWS S3
+
+- Tüm ürün görselleri AWS S3 üzerinde barındırılıyor
+- `normalizeImages()` ile ürün görsel yolları otomatik olarak S3 formatına dönüştürülüyor
+- Eski domain ( **shopapi.yunuskarasen.com** ) tamamen kaldırıldı
+
+#### ✔️ AWS CloudWatch
+
+- Sipariş ilerleme simülasyonu logları
+- Lambda hata takibi
+- Performans metrikleri
 
 ### 🗄️ Veritabanı
 
