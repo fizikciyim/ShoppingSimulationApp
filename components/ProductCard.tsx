@@ -97,7 +97,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             keyExtractor={(_, i) => i.toString()}
             renderItem={({ item }) => (
               <Image
-                source={item.uri ? { uri: item.uri } : item}
+                source={{ uri: typeof item === "string" ? item : item.uri }}
                 style={[styles.image, { width: cardWidth }]}
               />
             )}

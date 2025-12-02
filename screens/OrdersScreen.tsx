@@ -16,11 +16,11 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDarkMode } from "../context/DarkModeContext";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
-import { BASE_URL } from "../config";
+import { IMAGE_BASE_URL, BASE_URL } from "../config";
 export const getImageSource = (img: any) => {
   try {
     // 🔹 Boş veya geçersizse fallback
-    if (!img) return { uri: `${BASE_URL}/productImages/logo.png` };
+    if (!img) return { uri: `${IMAGE_BASE_URL}/productImages/logo.png` };
 
     // 🔹 Eğer obje ise (örnek: { uri: "..." })
     if (typeof img === "object" && img.uri) {
@@ -36,7 +36,7 @@ export const getImageSource = (img: any) => {
 
       // 🔹 /assets ile başlayan path'ler için fallback
       if (uri.startsWith("/assets") || uri.startsWith("./assets")) {
-        return { uri: `${BASE_URL}/productImages/logo.png` };
+        return { uri: `${IMAGE_BASE_URL}/productImages/logo.png` };
       }
 
       return { uri };
@@ -48,14 +48,14 @@ export const getImageSource = (img: any) => {
       if (img.includes("localhost") || img.includes("192.168.")) {
         const fixed = img.replace(
           /http:\/\/(localhost|192\.168\.\d+\.\d+):\d+/g,
-          BASE_URL
+          IMAGE_BASE_URL
         );
         return { uri: fixed };
       }
 
       // 🔹 Eğer sadece dosya adıysa
       if (!/^https?:\/\//i.test(img)) {
-        return { uri: `${BASE_URL}/productImages/${encodeURI(img)}` };
+        return { uri: `${IMAGE_BASE_URL}/productImages/${encodeURI(img)}` };
       }
 
       // 🔹 Zaten tam URL ise direkt dön
@@ -63,10 +63,10 @@ export const getImageSource = (img: any) => {
     }
 
     // 🔹 Fallback (garanti)
-    return { uri: `${BASE_URL}/productImages/logo.png` };
+    return { uri: `${IMAGE_BASE_URL}/productImages/logo.png` };
   } catch (err) {
     console.error("getImageSource hata:", err);
-    return { uri: `${BASE_URL}/productImages/logo.png` };
+    return { uri: `${IMAGE_BASE_URL}/productImages/logo.png` };
   }
 };
 const OrdersScreen: React.FC = () => {

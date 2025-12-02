@@ -12,25 +12,25 @@ import { Ionicons } from "@expo/vector-icons";
 import { useDarkMode } from "../context/DarkModeContext";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BASE_URL } from "../config";
+import { IMAGE_BASE_URL, BASE_URL } from "../config";
 const getImageSource = (img: any) => {
   if (!img) {
-    return { uri: `${BASE_URL}/productImages/logo.png` };
+    return { uri: `${IMAGE_BASE_URL}/productImages/logo.png` };
   }
 
   if (typeof img === "object" && img.uri) {
     let uri = img.uri;
 
     if (uri.startsWith("/assets") || uri.startsWith("./assets")) {
-      return { uri: `${BASE_URL}/productImages/logo.png` };
+      return { uri: `${IMAGE_BASE_URL}/productImages/logo.png` };
     }
 
     if (uri.includes("localhost")) {
-      uri = uri.replace("http://localhost:5000", BASE_URL);
+      uri = uri.replace("http://localhost:5000", IMAGE_BASE_URL);
     }
 
     if (uri.includes("192.168.")) {
-      uri = uri.replace(/http:\/\/192\.168\.\d+\.\d+:5000/, BASE_URL);
+      uri = uri.replace(/http:\/\/192\.168\.\d+\.\d+:5000/, IMAGE_BASE_URL);
     }
 
     return { uri };
@@ -38,13 +38,13 @@ const getImageSource = (img: any) => {
 
   if (typeof img === "string") {
     if (!/^https?:\/\//i.test(img)) {
-      return { uri: `${BASE_URL}/productImages/${encodeURI(img)}` };
+      return { uri: `${IMAGE_BASE_URL}/productImages/${encodeURI(img)}` };
     }
     return { uri: img };
   }
 
   // 🔹 Fallback
-  return { uri: `${BASE_URL}/productImages/logo.png` };
+  return { uri: `${IMAGE_BASE_URL}/productImages/logo.png` };
 };
 
 const OrderDetailScreen = ({ route }: any) => {
@@ -62,6 +62,8 @@ const OrderDetailScreen = ({ route }: any) => {
     "Teslim Edildi": "#4CAF50",
     "İptal Edildi": "#F44336",
   };
+  console.log("BASE_URL:", BASE_URL);
+  console.log("IMAGE_BASE_URL:", IMAGE_BASE_URL);
 
   const getStatusIcon = (status: string) => {
     switch (status) {

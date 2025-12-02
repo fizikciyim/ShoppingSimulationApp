@@ -172,7 +172,9 @@ const CategoryProductsScreen: React.FC<Props> = ({ route, navigation }) => {
       : [];
 
     return arr.map((name) => ({
-      uri: `${BASE_URL}/productImages/${encodeURI(name)}`,
+      uri: name.startsWith("http")
+        ? name // 🔥 ZATEN FULL URL İSE DOKUNMA
+        : `${BASE_URL}/productImages/${encodeURI(name)}`, // sadece normal dosya adı ise ekle
     }));
   };
 

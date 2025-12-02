@@ -1,0 +1,28 @@
+service: fakeshop-backend
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: eu-west-2
+  environment:
+    DB_HOST: fakeshop-db.cf880ue2e4wc.eu-west-2.rds.amazonaws.com
+    DB_USER: admin
+    DB_PASS: 12345678Bkyk
+    DB_NAME: fakeshop
+
+  vpc:
+    securityGroupIds:
+      - sg-0977dbf53610025b8
+    subnetIds:
+      - subnet-023c02877396533f2
+      - subnet-0fb17c83f60719c46
+      - subnet-07d266a7cbd305f3d
+
+functions:
+  api:
+    handler: lambda.handler
+    events:
+      - httpApi: "*"
+
+plugins:
+  - serverless-offline

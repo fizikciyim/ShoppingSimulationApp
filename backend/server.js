@@ -1,10 +1,10 @@
 // server.js
 import express from "express";
 import cors from "cors";
-import cron from "node-cron";
+// import cron from "node-cron";
 import { generateDailyDiscounts } from "./controllers/productController.js";
 
-// ?? Route dosyalarý
+// ?? Route dosyalarï¿½
 import authRoutes from "./routes/authRoutes.js";
 import addressRoutes from "./routes/addressRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
@@ -26,8 +26,7 @@ app.use(
 );
 app.use(express.json());
 
-
-// ?? Statik klasörler
+// ?? Statik klasï¿½rler
 app.use("/categoriesImages", express.static("public/categoriesImages"));
 app.use("/productImages", express.static("public/productImages"));
 
@@ -43,23 +42,24 @@ app.use(requestRoutes);
 
 // ?? Basit test
 app.get("/", (req, res) => {
-  res.send("? FakeShop API çalýþýyor!");
+  res.send("FakeShop API Ã§alÄ±ÅŸÄ±yor!");
 });
 
-// ?? Manuel kampanya oluþturma (test için)
-app.get("/api/generate-discounts", async (req, res) => {
-  await generateDailyDiscounts();
-  res.send("? Yeni indirim kampanyasý oluþturuldu!");
-});
+// ?? Manuel kampanya oluï¿½turma (test iï¿½in)
+// app.get("/api/generate-discounts", async (req, res) => {
+//   await generateDailyDiscounts();
+//   res.send("? Yeni indirim kampanyasï¿½ oluï¿½turuldu!");
+// });
 
-// ?? Her gün sabah 03:00'te otomatik kampanya
-cron.schedule("0 3 * * *", async () => {
-  console.log("? Günlük kampanya çalýþtýrýlýyor...");
-  await generateDailyDiscounts();
-});
+// ?? Her gï¿½n sabah 03:00'te otomatik kampanya
+// cron.schedule("0 3 * * *", async () => {
+//   console.log("? Gï¿½nlï¿½k kampanya ï¿½alï¿½ï¿½tï¿½rï¿½lï¿½yor...");
+//   await generateDailyDiscounts();
+// });
 
-// ?? Server baþlat
-const PORT = 5050;
-app.listen(PORT, "0.0.0.0", () =>
-  console.log(`?? Server çalýþýyor: http://0.0.0.0:${PORT}`)
-);
+// ?? Server baï¿½lat
+// const PORT = 5050;
+// app.listen(PORT, "0.0.0.0", () =>
+//   console.log(`?? Server ï¿½alï¿½ï¿½ï¿½yor: http://0.0.0.0:${PORT}`)
+// );
+export default app;

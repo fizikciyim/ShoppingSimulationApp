@@ -4,3 +4,4 @@ import Constants from "expo-constants";
 const extra = Constants.expoConfig?.extra ?? Constants.manifestExtra ?? {};
 
 export const BASE_URL = extra.BASE_URL;
+export const IMAGE_BASE_URL = extra.IMAGE_BASE_URL;

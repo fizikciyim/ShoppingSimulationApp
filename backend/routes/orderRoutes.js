@@ -6,7 +6,7 @@ import {
   deleteOrderById,
   getOrderStatus, // yeni eklendi
   deleteAllOrders,
-} from "../controllers/orderContr oller.js";
+} from "../controllers/orderController.js";
 
 const router = express.Router();
 

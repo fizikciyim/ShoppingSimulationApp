@@ -11,9 +11,9 @@ const config: ExpoConfig = {
   newArchEnabled: true,
 
   splash: {
-    image: "./assets/splash.png", // 🔹 yeni splash görselin burada
-    resizeMode: "contain", // ekrana ortalanır, taşmaz
-    backgroundColor: "#4CAF50", // yeşil arka plan
+    image: "./assets/splash.png",
+    resizeMode: "contain",
+    backgroundColor: "#4CAF50",
   },
 
   ios: {
@@ -23,7 +23,18 @@ const config: ExpoConfig = {
   android: {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
-    package: "com.anonymous.FakeShopApp",
+
+    // 🔹 Benzersiz bir package adı kullan (zorunlu)
+    package: "com.yunuskarasen.fakeshopapp",
+
+    // 🔹 Google Play sürüm numaraları için gerekli
+    versionCode: 1,
+
+    // 🔹 İkonu adaptive hale getir (Play Store zorunluluğu)
+    adaptiveIcon: {
+      foregroundImage: "./assets/adaptive-icon.png",
+      backgroundColor: "#4CAF50",
+    },
   },
 
   web: {
@@ -34,7 +45,8 @@ const config: ExpoConfig = {
     eas: {
       projectId: "d6f19580-a7bf-42ae-9748-47cb1d1ff871",
     },
-    BASE_URL: "https://shopapi.yunuskarasen.com",
+    BASE_URL: "https://gdu2vdhta8.execute-api.eu-west-2.amazonaws.com",
+    IMAGE_BASE_URL: "https://fakeshop-images-yunus.s3.eu-west-2.amazonaws.com",
   },
 };
 

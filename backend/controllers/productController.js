@@ -2,15 +2,16 @@ import dotenv from "dotenv";
 import db from "../config/db.js";
 
 dotenv.config();
+const S3_BASE_URL = "https://fakeshop-images-yunus.s3.eu-west-2.amazonaws.com";
 
 /**
- * ??? Ürünleri getir (kategori, fiyat aralýðý ve sýralama ile)
+ * ??? ï¿½rï¿½nleri getir (kategori, fiyat aralï¿½ï¿½ï¿½ ve sï¿½ralama ile)
  */
 export const getProducts = async (req, res) => {
   try {
-    const { category_id, subcategory_id, min_price, max_price, sort } = req.query;
+    const { category_id, subcategory_id, min_price, max_price, sort } =
+      req.query;
 
-    // ?? Artýk ürünleri yorumlarla birleþtiriyoruz
     let sql = `
       SELECT 
         p.*, 
@@ -23,7 +24,6 @@ export const getProducts = async (req, res) => {
     const where = [];
     const params = [];
 
-    // ?? Filtreler
     if (category_id) {
       where.push("p.category_id = ?");
       params.push(Number(category_id));
@@ -45,10 +45,8 @@ export const getProducts = async (req, res) => {
       sql += " WHERE " + where.join(" AND ");
     }
 
-    // ?? Gruplama (AVG kullanýldýðý için gerekli)
     sql += " GROUP BY p.id ";
 
-    // ?? Sýralama
     switch (sort) {
       case "priceAsc":
         sql += " ORDER BY p.price ASC";
@@ -68,33 +66,56 @@ export const getProducts = async (req, res) => {
 
     const [rows] = await db.query(sql, params);
 
-    // ?? Ýndirimli ürünleri frontend'e uygun biçimde hazýrla
-    const products = rows.map((p) => ({
-      ...p,
-      price: p.is_discounted ? p.discount_price : p.price,
-      originalPrice: p.price,
-      discountRate: p.is_discounted ? p.discount_rate : null,
-      discountActive: !!p.is_discounted,
-      discountExpiresAt: p.discount_expires_at,
-      rating: Number(p.rating),           // ? ortalama puan
-      ratingCount: Number(p.ratingCount), // ? yorum sayýsý
-    }));
+    const products = rows.map((p) => {
+      let parsedImages = [];
+
+      try {
+        if (typeof p.images === "string") {
+          const temp = JSON.parse(p.images);
+          parsedImages = temp.map((img) =>
+            img.startsWith("http")
+              ? img
+              : `${S3_BASE_URL}/productImages/${encodeURIComponent(img)}`
+          );
+        } else if (Array.isArray(p.images)) {
+          parsedImages = p.images.map((img) =>
+            img.startsWith("http")
+              ? img
+              : `${S3_BASE_URL}/productImages/${encodeURIComponent(img)}`
+          );
+        }
+      } catch (err) {
+        parsedImages = [];
+      }
+
+      return {
+        ...p,
+        price: p.is_discounted ? p.discount_price : p.price,
+        originalPrice: p.price,
+        discountRate: p.is_discounted ? p.discount_rate : null,
+        discountActive: !!p.is_discounted,
+        discountExpiresAt: p.discount_expires_at,
+        rating: Number(p.rating),
+        ratingCount: Number(p.ratingCount),
+        images: parsedImages, // ðŸ”¥ sadece bu alan var
+      };
+    });
 
     res.json(products);
   } catch (error) {
-    console.error("Ürünler alýnamadý:", error);
-    res.status(500).json({ message: "Ürünler alýnýrken hata oluþtu." });
+    console.error("ÃœrÃ¼nler alÄ±namadÄ±:", error);
+    res.status(500).json({ message: "ÃœrÃ¼nler alÄ±nÄ±rken hata oluÅŸtu." });
   }
 };
 
 /**
- * ?? Tek bir ürünü getir (yorumlarýyla birlikte)
+ * ?? Tek bir ï¿½rï¿½nï¿½ getir (yorumlarï¿½yla birlikte)
  */
 export const getProductById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // ?? Ürünü, ortalama puan ve yorum sayýsýyla birlikte al
+    // ?? ï¿½rï¿½nï¿½, ortalama puan ve yorum sayï¿½sï¿½yla birlikte al
     const [productRows] = await db.query(
       `
       SELECT 
@@ -110,20 +131,19 @@ export const getProductById = async (req, res) => {
     );
 
     if (productRows.length === 0)
-      return res.status(404).json({ message: "Ürün bulunamadý." });
+      return res.status(404).json({ message: "ï¿½rï¿½n bulunamadï¿½." });
 
     const product = productRows[0];
 
-    // ? BASE_URL (env'den okunur, yoksa varsayýlan IP)
-    const BASE_URL = process.env.BASE_URL || "http://146.190.236.239:5050";
+    // ? BASE_URL (env'den okunur, yoksa varsayï¿½lan IP)
 
-    // ? Görsel yollarýný tam URL yap
+    // ? Gï¿½rsel yollarï¿½nï¿½ tam URL yap
     let parsedImages = [];
     if (Array.isArray(product.images)) {
       parsedImages = product.images.map((img) =>
         img.startsWith("http")
           ? img
-          : `${BASE_URL}/productImages/${encodeURI(img)}`
+          : `${S3_BASE_URL}/productImages/${encodeURI(img)}`
       );
     } else if (typeof product.images === "string") {
       try {
@@ -131,35 +151,33 @@ export const getProductById = async (req, res) => {
         parsedImages = temp.map((img) =>
           img.startsWith("http")
             ? img
-            : `${BASE_URL}/productImages/${encodeURI(img)}`
+            : `${S3_BASE_URL}/productImages/${encodeURI(img)}`
         );
       } catch {
         parsedImages = [
-          `${BASE_URL}/productImages/${encodeURI(product.images)}`,
+          `${S3_BASE_URL}/productImages/${encodeURI(product.images)}`,
         ];
       }
     }
 
     product.images = parsedImages;
 
-    // ? Yorumlarý çek
+    // ? Yorumlarï¿½ ï¿½ek
     const [reviews] = await db.query(
       "SELECT * FROM reviews WHERE product_id = ? ORDER BY created_at DESC",
       [id]
     );
 
-    // ? Frontend'e gönder
+    // ? Frontend'e gï¿½nder
     res.json({ ...product, reviews });
   } catch (error) {
-    console.error("Ürün detayý alýnamadý:", error);
-    res
-      .status(500)
-      .json({ message: "Ürün detayý alýnýrken hata oluþtu." });
+    console.error("ï¿½rï¿½n detayï¿½ alï¿½namadï¿½:", error);
+    res.status(500).json({ message: "ï¿½rï¿½n detayï¿½ alï¿½nï¿½rken hata oluï¿½tu." });
   }
 };
 
 /**
- * ? Yeni ürün ekle
+ * ? Yeni ï¿½rï¿½n ekle
  */
 export const addProduct = async (req, res) => {
   try {
@@ -182,24 +200,24 @@ export const addProduct = async (req, res) => {
       ]
     );
 
-    res.status(201).json({ id: result.insertId, message: "Ürün eklendi." });
+    res.status(201).json({ id: result.insertId, message: "ï¿½rï¿½n eklendi." });
   } catch (error) {
-    console.error("Ürün eklenemedi:", error);
-    res.status(500).json({ message: "Ürün eklenirken hata oluþtu." });
+    console.error("ï¿½rï¿½n eklenemedi:", error);
+    res.status(500).json({ message: "ï¿½rï¿½n eklenirken hata oluï¿½tu." });
   }
 };
 
 /**
- * ?? Günlük indirim kampanyasý oluþturur
- * - Her gün belirli ürünlere %20–%50 arasý rastgele indirim uygular
- * - %60 olasýlýkla indirim verir
- * - Sonuçlarý veritabanýna yazar
+ * ?? Gï¿½nlï¿½k indirim kampanyasï¿½ oluï¿½turur
+ * - Her gï¿½n belirli ï¿½rï¿½nlere %20ï¿½%50 arasï¿½ rastgele indirim uygular
+ * - %60 olasï¿½lï¿½kla indirim verir
+ * - Sonuï¿½larï¿½ veritabanï¿½na yazar
  */
 export const generateDailyDiscounts = async () => {
   try {
-    console.log("?? Günlük indirim kampanyasý baþlatýlýyor...");
+    console.log("?? Gï¿½nlï¿½k indirim kampanyasï¿½ baï¿½latï¿½lï¿½yor...");
 
-    // 1?? Eski kampanyalarý sýfýrla
+    // 1?? Eski kampanyalarï¿½ sï¿½fï¿½rla
     await db.query(`
       UPDATE products
       SET is_discounted = 0,
@@ -208,7 +226,7 @@ export const generateDailyDiscounts = async () => {
           discount_expires_at = NULL
     `);
 
-    // 2?? %60 rastgele ürün seç, %20–%50 arasý indirim uygula
+    // 2?? %60 rastgele ï¿½rï¿½n seï¿½, %20ï¿½%50 arasï¿½ indirim uygula
     await db.query(`
       UPDATE products
       JOIN (
@@ -222,8 +240,8 @@ export const generateDailyDiscounts = async () => {
           products.discount_expires_at = CONCAT(CURDATE(), ' 23:59:59')
     `);
 
-    console.log("? Günlük indirim kampanyasý baþarýyla oluþturuldu.");
+    console.log("? Gï¿½nlï¿½k indirim kampanyasï¿½ baï¿½arï¿½yla oluï¿½turuldu.");
   } catch (err) {
-    console.error("? Kampanya oluþturulamadý:", err);
+    console.error("? Kampanya oluï¿½turulamadï¿½:", err);
   }
 };

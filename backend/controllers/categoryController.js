@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // ?? Sabit BASE_URL (DigitalOcean IP'si veya .env �zerinden)
-const BASE_URL = process.env.BASE_URL || "http://146.190.236.239:5050";
+const S3_BASE_URL = "https://fakeshop-images-yunus.s3.eu-west-2.amazonaws.com";
 
 // ?? T�m kategorileri getir
 export const getCategories = async (req, res) => {
@@ -31,7 +31,7 @@ export const getCategories = async (req, res) => {
         name: cat.name,
         description: cat.description || null,
         image: cat.image
-          ? `${BASE_URL}/categoriesImages/${encodeURIComponent(cat.image)}`
+          ? `${S3_BASE_URL}/categoriesImages/${encodeURIComponent(cat.image)}`
           : null,
         icon_names: icons,
       };
