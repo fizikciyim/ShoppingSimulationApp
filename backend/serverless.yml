@@ -4,11 +4,14 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: eu-west-2
+
   environment:
     DB_HOST: fakeshop-db.cf880ue2e4wc.eu-west-2.rds.amazonaws.com
     DB_USER: admin
     DB_PASS: 12345678Bkyk
     DB_NAME: fakeshop
+    ORDER_PROGRESS_LAMBDA_ARN: arn:aws:lambda:eu-west-2:778361275539:function:fakeshop-backend-dev-orderProgress
+    EVENTBRIDGE_ROLE_ARN: arn:aws:iam::778361275539:role/eventbridge-invoke-lambda-role
 
   vpc:
     securityGroupIds:
@@ -18,11 +21,36 @@ provider:
       - subnet-0fb17c83f60719c46
       - subnet-07d266a7cbd305f3d
 
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - scheduler:CreateSchedule
+        - scheduler:UpdateSchedule
+        - scheduler:DeleteSchedule
+      Resource: "*"
+
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource: "*"
+
+    - Effect: Allow
+      Action:
+        - iam:PassRole
+      Resource: arn:aws:iam::778361275539:role/eventbridge-invoke-lambda-role
+
 functions:
   api:
+    name: ${self:service}-${sls:stage}-api
     handler: lambda.handler
     events:
       - httpApi: "*"
+
+  orderProgress:
+    name: ${self:service}-${sls:stage}-orderProgress
+    handler: lambda-orders/orderProgress.handler
+    timeout: 15
+    memorySize: 128
 
 plugins:
   - serverless-offline

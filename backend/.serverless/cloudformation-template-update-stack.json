@@ -77,6 +77,12 @@
         "LogGroupName": "/aws/lambda/fakeshop-backend-dev-api"
       }
     },
+    "OrderProgressLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/fakeshop-backend-dev-orderProgress"
+      }
+    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -134,6 +140,29 @@
                       "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/fakeshop-backend-dev*:*:*"
                     }
                   ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "scheduler:CreateSchedule",
+                    "scheduler:UpdateSchedule",
+                    "scheduler:DeleteSchedule"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:PassRole"
+                  ],
+                  "Resource": "arn:aws:iam::778361275539:role/eventbridge-invoke-lambda-role"
                 }
               ]
             }
@@ -176,7 +205,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/fakeshop-backend/dev/1764706484994-2025-12-02T20:14:44.994Z/fakeshop-backend.zip"
+          "S3Key": "serverless/fakeshop-backend/dev/1764847401585-2025-12-04T11:23:21.585Z/fakeshop-backend.zip"
         },
         "Handler": "lambda.handler",
         "Runtime": "nodejs18.x",
@@ -188,7 +217,9 @@
             "DB_HOST": "fakeshop-db.cf880ue2e4wc.eu-west-2.rds.amazonaws.com",
             "DB_USER": "admin",
             "DB_PASS": "12345678Bkyk",
-            "DB_NAME": "fakeshop"
+            "DB_NAME": "fakeshop",
+            "ORDER_PROGRESS_LAMBDA_ARN": "arn:aws:lambda:eu-west-2:778361275539:function:fakeshop-backend-dev-orderProgress",
+            "EVENTBRIDGE_ROLE_ARN": "arn:aws:iam::778361275539:role/eventbridge-invoke-lambda-role"
           }
         },
         "Role": {
@@ -212,14 +243,69 @@
         "ApiLogGroup"
       ]
     },
-    "ApiLambdaVersionjxkQNjhx6depQ3JXw09cHaNRYhyiiAPl4CCOills": {
+    "OrderProgressLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/fakeshop-backend/dev/1764847401585-2025-12-04T11:23:21.585Z/fakeshop-backend.zip"
+        },
+        "Handler": "lambda-orders/orderProgress.handler",
+        "Runtime": "nodejs18.x",
+        "FunctionName": "fakeshop-backend-dev-orderProgress",
+        "MemorySize": 128,
+        "Timeout": 15,
+        "Environment": {
+          "Variables": {
+            "DB_HOST": "fakeshop-db.cf880ue2e4wc.eu-west-2.rds.amazonaws.com",
+            "DB_USER": "admin",
+            "DB_PASS": "12345678Bkyk",
+            "DB_NAME": "fakeshop",
+            "ORDER_PROGRESS_LAMBDA_ARN": "arn:aws:lambda:eu-west-2:778361275539:function:fakeshop-backend-dev-orderProgress",
+            "EVENTBRIDGE_ROLE_ARN": "arn:aws:iam::778361275539:role/eventbridge-invoke-lambda-role"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            "sg-0977dbf53610025b8"
+          ],
+          "SubnetIds": [
+            "subnet-023c02877396533f2",
+            "subnet-0fb17c83f60719c46",
+            "subnet-07d266a7cbd305f3d"
+          ]
+        }
+      },
+      "DependsOn": [
+        "OrderProgressLogGroup"
+      ]
+    },
+    "ApiLambdaVersion8utsvyFz0KzoWjluYKKt2bYPnOFgsv7AXLee2wsgCE": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ApiLambdaFunction"
         },
-        "CodeSha256": "rXxC0c1e3RIlkFSOBO1UVCQffoEX5xmBtG4Zxf3zJKs="
+        "CodeSha256": "SuV02FeTUu5W1NRSn0CnU8TvM2gS0OLBQzijfy34tOQ="
+      }
+    },
+    "OrderProgressLambdaVersionUvN6KQEijS86sFE5b7Z5NqK3EwdKG6hyQVjzcrNmEAY": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "OrderProgressLambdaFunction"
+        },
+        "CodeSha256": "SuV02FeTUu5W1NRSn0CnU8TvM2gS0OLBQzijfy34tOQ="
       }
     },
     "HttpApi": {
@@ -330,10 +416,19 @@
     "ApiLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ApiLambdaVersionjxkQNjhx6depQ3JXw09cHaNRYhyiiAPl4CCOills"
+        "Ref": "ApiLambdaVersion8utsvyFz0KzoWjluYKKt2bYPnOFgsv7AXLee2wsgCE"
       },
       "Export": {
         "Name": "sls-fakeshop-backend-dev-ApiLambdaFunctionQualifiedArn"
+      }
+    },
+    "OrderProgressLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "OrderProgressLambdaVersionUvN6KQEijS86sFE5b7Z5NqK3EwdKG6hyQVjzcrNmEAY"
+      },
+      "Export": {
+        "Name": "sls-fakeshop-backend-dev-OrderProgressLambdaFunctionQualifiedArn"
       }
     },
     "HttpApiId": {

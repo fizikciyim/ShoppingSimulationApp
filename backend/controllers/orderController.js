@@ -1,5 +1,6 @@
 // controllers/orders.controller.js
 import db from "../config/db.js";
+import { scheduleNextStep } from "../utils/scheduler.js";
 
 /**
  * Sipariş numarası üret
@@ -37,11 +38,22 @@ const hoursToMs = (minH, maxH) => {
  * Auth: req.user.id zorunlu
  */
 export const createOrder = async (req, res) => {
+  console.log("🔥 createOrder çalıştı");
+  console.log("📦 Body:", req.body);
+  console.log("👤 User:", req.user);
+
   const { address_id, items, total_price, payment_method, order_note } =
     req.body;
   const user_id = req.user?.id;
 
+  console.log("➡️ user_id:", user_id);
+  console.log("➡️ address_id:", address_id);
+  console.log("➡️ items:", items);
+  console.log("➡️ total_price:", total_price);
+  console.log("➡️ payment_method:", payment_method);
+
   if (!user_id || !address_id || !items || !total_price || !payment_method) {
+    console.log("❌ Eksik bilgi gönderildi!");
     return res.status(400).json({
       success: false,
       message: "Eksik bilgi gönderildi.",
@@ -49,18 +61,21 @@ export const createOrder = async (req, res) => {
   }
 
   try {
+    console.log("🛢 DB INSERT başlıyor...");
+
     const order_number = generateOrderNumber();
+
     const [result] = await db.query(
       `INSERT INTO orders (
-  order_number, user_id, address_id, items, total_price, payment_method,
-  order_note, status, has_event, event_text, event_index, step_history,
-  created_at, updated_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, 'Sipariş Alındı', 0, NULL, NULL,
-  JSON_ARRAY(JSON_OBJECT(
-    'title','Sipariş Alındı',
-    'at', DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 3 HOUR), '%Y-%m-%d %H:%i:%s')
-  )),
-  NOW(), NOW())`,
+        order_number, user_id, address_id, items, total_price, payment_method,
+        order_note, status, has_event, event_text, event_index, step_history,
+        created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'Sipariş Alındı', 0, NULL, NULL,
+        JSON_ARRAY(JSON_OBJECT(
+          'title','Sipariş Alındı',
+          'at', DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 3 HOUR), '%Y-%m-%d %H:%i:%s')
+        )),
+        NOW(), NOW())`,
       [
         order_number,
         user_id,
@@ -72,21 +87,22 @@ export const createOrder = async (req, res) => {
       ]
     );
 
-    const orderId = result.insertId;
+    console.log("✔ DB INSERT tamam!");
+    console.log("🆔 orderId:", result.insertId);
 
-    // Arka planda ilerleme simülasyonu
-    simulateOrderProgress(orderId).catch((e) =>
-      console.error("simulateOrderProgress hata:", e)
-    );
+    // İlk adım için scheduler çalıştır
+    console.log("⏱ scheduleNextStep çağırılıyor...");
+    await scheduleNextStep(result.insertId, 1);
+    console.log("⏱ scheduleNextStep OK!");
 
     return res.json({
       success: true,
       message: "Sipariş başarıyla oluşturuldu.",
-      order_id: orderId,
+      order_id: result.insertId,
       order_number,
     });
   } catch (err) {
-    console.error("Sipariş oluşturulurken hata:", err);
+    console.error("❌ Sipariş oluşturulurken hata:", err);
     return res.status(500).json({
       success: false,
       message: "Sipariş kaydedilemedi.",
@@ -95,172 +111,6 @@ export const createOrder = async (req, res) => {
   }
 };
 
-/**
- * Sipariş ilerleme simülasyonu
- */
-async function simulateOrderProgress(orderId) {
-  const EVENT_GROUPS = {
-    Hazırlanıyor: [
-      "Depoda yanlış paketleme yapıldı",
-      "Ürün tedarikçiden eksik geldiği için sipariş iptal edildi",
-      "Depoda yangın alarmı nedeniyle tüm gönderiler durduruldu",
-      "Sistemde beklenmedik hata oluştu",
-      "Tedarik zincirinde aksama yaşandı, gönderi iptal edildi",
-      "Depo çalışanı kahve molasında ürünün yerini unuttu",
-      "Ürün kalite kontrolünden geçemedi",
-      "Ürün etiketleme sırasında barkod hatası oluştu",
-      "Stok sisteminde tutarsızlık tespit edildi",
-      "Ürün kutusu ezik bulundu, yeniden paketleme süreci başlatıldı",
-      "Paketleme bandında elektrik kesintisi yaşandı",
-      "Ürün ambalaj malzemesi tükendi, gönderim durduruldu",
-      "Yeni ürün partisi karıştırıldı, kontrol süreci başlatıldı",
-      "Depoda forklift arızalandı, işlemler yavaşladı",
-      "Etiket yazıcısı mürekkep bitti, yenisi bekleniyor",
-      "Depo çalışanı yanlış ürünü kutuya koydu",
-      "Ürün güvenlik kontrolünde takıldı",
-      "Kalite kontrol ekibi fazla mesai yapmayı reddetti",
-      "Tedarikçi faturayı göndermediği için işlem durduruldu",
-      "Ürün üzerine yanlış seri numarası yazıldı",
-    ],
-    "Kargoya Verildi": [
-      "Kargo aracı yolda bozuldu",
-      "Kargo şubesi taşındı, gönderi kayboldu",
-      "Ürün taşıma sırasında hasar gördü",
-      "Kargo şirketi teknik arıza yaşadı",
-      "Ürün sevkiyat sırasında yanlış araca yüklendi",
-      "Kargo aracının lastiği patladı",
-      "Kargo sistemi bakımdadayken veri kaybı yaşandı",
-      "Kargo şirketi grevde olduğu için gönderi iptal edildi",
-      "Şube çalışanı kutuyu yanlış müşteriye teslim etti",
-      "Kargo yanlış ülkeye yönlendirildi",
-      "Gümrükte evrak eksikliğinden dolayı ürün bekletiliyor",
-      "Ürün teslimatı sırasında fırtına çıktı",
-      "Kargo aracının GPS’i bozuldu",
-      "Sürücü vardiya değişimini unuttu",
-      "Kargo konteyneri ters yöne giden araca yüklendi",
-      "Kargo firmasının sisteminde planlı bakım vardı",
-      "Ürün gümrükte bekletiliyor",
-      "Kargo takip sistemi çöktü, güncelleme gecikiyor",
-      "Sürücü kahve molasında aracı kilitledi, anahtar içeride kaldı",
-      "Kargo kamyonunun sigortası bittiği için bağlandı",
-    ],
-
-    Teslimatta: [
-      "Kurye adresi bulamadı ve teslimat iptal edildi",
-      "Alıcıya ulaşılamadığı için teslimat iptal edildi",
-      "Kuryenin aracı kaza yaptığı için gönderi iptal edildi",
-      "Ürün kayboldu",
-      "Teslimat sırasında ürün hasar gördü",
-      "Kurye yoğun trafikte mahsur kaldı",
-      "Yanlış alıcıya teslim edildi",
-      "Kurye bölge dışı teslimat denemesi yaptığı için iptal edildi",
-      "Ürün teslimat sırasında yağmurdan ıslandı",
-      "Teslimat sisteminde GPS arızası yaşandı",
-      "Kuryenin telefonu kapandığı için iletişim sağlanamadı",
-      "Kurye evde kimseyi bulamadı",
-      "Alıcı tatilde olduğu için teslimat ertelendi",
-      "Kurye teslimat kutusunu başka araçta unuttu",
-      "Adres yanlış yazıldığı için teslimat geri döndü",
-      "Kurye siparişi başka şehre götürdü",
-      "Kuryenin motoru yolda kaldı",
-      "Teslimat sırasında köpek saldırısına uğrandı",
-    ],
-
-    Ortak: [
-      "Sistem hatası nedeniyle işlem iptal edildi",
-      "Sipariş yoğunluğu nedeniyle işlem iptal edildi",
-      "Ürün barkodu okunamadı ve işlem iptal edildi",
-      "Beklenmedik bir teknik sorun oluştu",
-      "Sunucu bağlantısı kesildi",
-      "Veritabanı yanıt vermedi",
-      "Sistem güncellemesi nedeniyle işlem iptal edildi",
-      "Yapay zekâ algoritması siparişi şüpheli buldu",
-      "Teslimat süresi aşıldığı için sipariş otomatik iptal edildi",
-      "Operasyon ekibi manuel iptal işlemi gerçekleştirdi",
-      "Planlı bakım nedeniyle işlemler geçici olarak durduruldu",
-      "Beklenmedik ağ trafiği nedeniyle işlem gecikti",
-      "Veri senkronizasyonu başarısız oldu",
-      "Sunucu aşırı yük altında kaldı",
-      "Güvenlik sistemi siparişi spam olarak işaretledi",
-      "Faturalandırma sisteminde hata oluştu",
-      "Destek ekibi manuel müdahale etti",
-      "Üçüncü taraf servis cevap vermedi",
-    ],
-  };
-
-  // İptal edilecek adım index'i (1..3)
-  const eventIndex = Math.floor(Math.random() * (STEPS.length - 2)) + 1;
-
-  for (let i = 1; i < STEPS.length; i++) {
-    await sleep(hoursToMs(5, 24)); // 5–24 saat arası rastgele bekleme
-
-    if (i === eventIndex) {
-      const currentStep = STEPS[i];
-      const possibleEvents = [
-        ...(EVENT_GROUPS[currentStep] || []),
-        ...EVENT_GROUPS.Ortak,
-      ];
-      const event =
-        possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
-
-      await db.query(
-        `UPDATE orders
-           SET status='İptal Edildi',
-               has_event=1,
-               event_text=?,
-               event_index=?,
-               step_history = JSON_ARRAY_APPEND(
-                 COALESCE(step_history, JSON_ARRAY()),
-                 '$',
-                 JSON_OBJECT(
-                   'title', ?,
-'at', DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 3 HOUR), '%Y-%m-%d %H:%i:%s'),
-                   'event', ?,
-                   'cancelled', true
-                 )
-               ),
-               updated_at=NOW()
-           WHERE id=?`,
-        [event, eventIndex, STEPS[i], event, orderId]
-      );
-
-      console.log(
-        `🚨 Sipariş ${orderId} iptal edildi (${currentStep}): ${event}`
-      );
-      return;
-    }
-
-    await db.query(
-      `UPDATE orders
-       SET status=?,
-           step_history = JSON_ARRAY_APPEND(
-             COALESCE(step_history, JSON_ARRAY()),
-             '$',
-             JSON_OBJECT(
-               'title', ?,
-'at', DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 3 HOUR), '%Y-%m-%d %H:%i:%s')
-             )
-           ),
-           updated_at=NOW()
-       WHERE id=?`,
-      [STEPS[i], STEPS[i], orderId]
-    );
-  }
-
-  const fallbackEvent = "Bilinmeyen bir hata nedeniyle sipariş iptal edildi.";
-  const fallbackIndex = STEPS.length - 2;
-  await db.query(
-    `UPDATE orders
-     SET status='İptal Edildi', has_event=1, event_text=?, event_index=?, updated_at=NOW()
-     WHERE id=?`,
-    [fallbackEvent, fallbackIndex, orderId]
-  );
-}
-
-/**
- * Kullanıcının tüm siparişleri
- * Auth: req.user.id
- */
 export const getOrders = async (req, res) => {
   const user_id = req.user?.id;
   if (!user_id) {
